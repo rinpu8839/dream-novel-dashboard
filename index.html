@@ -1015,8 +1015,19 @@ function validateData() {
     });
 }
     // 保存データを読み込み
-    const hasData = loadAllData();// データを読み込み
-function loadAllData() {
+    const hasData = loadAllData();//データを読み込み
+// データの整合性をチェック
+function validateData() {
+    // tasksに存在するジャンルがgenresにも存在することを確認
+    Object.keys(tasks).forEach(genre => {
+        if (!genres.includes(genre)) {
+            console.log(`ジャンル「${genre}」を復元`);
+            genres.push(genre);
+        }
+    });
+    
+    // 空<span class="cursor">█</span>
+    function loadAllData() {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
         try {
