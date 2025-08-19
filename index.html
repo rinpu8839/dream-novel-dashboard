@@ -444,6 +444,53 @@ padding: 15px;
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="夢小説">
 <script>
+// ===== データ永続化設定 =====
+// ローカルストレージのキー
+const STORAGE_KEY = 'dreamNovelData';
+
+// データを保存
+function saveAllData() {
+    const dataToSave = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        selectedGenre: selectedGenre,
+        motivationLevel: motivationLevel,
+        lastSaved: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    console.log('データ保存完了:', new Date().toLocaleTimeString());
+}
+
+// データを読み込み
+function loadAllData() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            tasks = data.tasks || {};
+            genres = data.genres || ['TRICK', 'KILLERS'];
+            dailyProgress = data.dailyProgress || {};
+            selectedGenre = data.selectedGenre || '全体';
+            motivationLevel = data.motivationLevel || 75;
+            console.log('データ読み込み完了:', data.lastSaved);
+            return true;
+        } catch (e) {
+            console.error('データ読み込みエラー:', e);
+            return false;
+        }
+    }
+    return false;
+}
+
+// 自動保存（データ変更時に呼び出す）
+let saveTimeout;
+function autoSave() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        saveAllData();
+    }, 500); // 0.5秒後に保存
+}
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js');
 }
@@ -463,11 +510,60 @@ if ('serviceWorker' in navigator) {
 <div class="container">
 <!-- ヘッダー -->
 <div class="header">
+<div style="margin-top: 10px;">
+    <button class="btn btn-warning btn-small" onclick="downloadBackup()">
+        💾 バックアップ
+    </button>
+    <button class="btn btn-success btn-small" onclick="uploadBackup()">
+        📂 復元
+    </button>
+</div>
 <div class="title">
 <span>✨</span>
 <span>夢小説創作ダッシュボード</span>
 </div>
+// バックアップダウンロード
+function downloadBackup() {
+    const data = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dream-novel-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+}
 
+// バックアップアップロード
+function uploadBackup() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                tasks = data.tasks;
+                genres = data.genres;
+                dailyProgress = data.dailyProgress || {};
+                saveAllData();
+                rebuildGenreTabs();
+                renderTasks();
+                alert('復元完了！');
+            } catch (e) {
+                alert('ファイル読み込みエラー');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
 ```
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
 <div>
@@ -835,39 +931,35 @@ completePomodoro = function() {
 
 // 初期化関数を修正
 async function init() {
-    try {
-        // IndexedDBから読み込み
-        await loadFromIndexedDB();
-        
-        // データがない場合は初期データを生成
-        if (Object.keys(tasks).length === 0) {
-            generateInitialTasks();
-        }
-        
-        // UI更新
-        renderTasks();
-        updateStats();
-        updateAIAdvice();
-        checkOverdueTasks();
-        updateProgressSection();
-        updateMotivation();
-        updateTodayProgress();
-        
-    } catch (error) {
-        console.error('初期化エラー:', error);
-        // フォールバック: localStorage使用
-        const saved = localStorage.getItem('dreamNovelData');
-        if (saved) {
-            const data = JSON.parse(saved);
-            tasks = data.tasks || {};
-            genres = data.genres || ['TRICK', 'KILLERS'];
-            dailyProgress = data.dailyProgress || {};
-        } else {
-            generateInitialTasks();
-        }
-        renderTasks();
-        updateStats();
+// 初期化
+function init() {
+    // 保存データを読み込み
+    const hasData = loadAllData();
+    
+    // データがない場合のみ初期データを生成
+    if (!hasData || Object.keys(tasks).length === 0) {
+        const today = new Date().toISOString().split('T')[0];
+        dailyProgress[today] = 0;
+        generateInitialTasks();
     }
+    
+    // ジャンルタブを再構築（重要！）
+    rebuildGenreTabs();
+    
+    // 存在しないジャンルのタスクがあれば、genresに追加
+    Object.keys(tasks).forEach(genre => {
+        if (!genres.includes(genre) && genre !== '全体') {
+            genres.push(genre);
+        }
+    });
+    
+    renderTasks();
+    updateStats();
+    updateAIAdvice();
+    checkOverdueTasks();
+    updateProgressSection();
+    updateMotivation();
+    updateTodayProgress();
 }
 
 // ページ離脱時の保存
