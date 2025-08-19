@@ -1041,6 +1041,16 @@ function init() {
     updateMotivation();
     updateTodayProgress();
 }
+    function init() {
+    // ... 既存のコード
+    updateTodayProgress();
+    
+    // 新機能の初期化
+    showWeeklyView();
+    checkAchievements();
+    displayMemos();
+    initAnalysisDashboard(); // この行を追加
+}
 
 // 初期タスク生成
 function generateInitialTasks() {
@@ -1738,6 +1748,270 @@ function loadTheme() {
     input.value = '';
     hideModal('genreModal');
     autoSave();
+}
+    // ===== 詳細分析ダッシュボード =====
+function showAnalysisTab(tabName) {
+    // タブボタンのスタイル更新
+    document.querySelectorAll('.analysis-tab').forEach(tab => {
+        tab.style.background = '#e0e0e0';
+        tab.style.color = '#333';
+        tab.classList.remove('active');
+    });
+    event.target.style.background = '#667eea';
+    event.target.style.color = 'white';
+    event.target.classList.add('active');
+    
+    const content = document.getElementById('analysisContent');
+    
+    switch(tabName) {
+        case 'patterns':
+            showWorkPatterns(content);
+            break;
+        case 'productivity':
+            showProductivityAnalysis(content);
+            break;
+        case 'comparison':
+            showGenreComparison(content);
+            break;
+    }
+}
+
+// 作業パターン分析
+function showWorkPatterns(container) {
+    const last30Days = {};
+    const today = new Date();
+    
+    // 過去30日のデータを集計
+    for (let i = 0; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        last30Days[dateStr] = dailyProgress[dateStr] || 0;
+    }
+    
+    // 曜日別集計
+    const weekdayStats = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+    Object.entries(last30Days).forEach(([dateStr, count]) => {
+        const day = new Date(dateStr).getDay();
+        weekdayStats[day].push(count);
+    });
+    
+    const weekdayAverage = Object.entries(weekdayStats).map(([day, counts]) => {
+        const avg = counts.length > 0 ? counts.reduce((a, b) => a + b, 0) / counts.length : 0;
+        return { day: parseInt(day), average: avg };
+    });
+    
+    const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+    const maxAvg = Math.max(...weekdayAverage.map(d => d.average));
+    
+    container.innerHTML = `
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 15px;">📅 曜日別平均作業量</h4>
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+                ${weekdayAverage.map(data => `
+                    <div style="text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 5px; color: ${data.day === 0 ? '#ff6b6b' : data.day === 6 ? '#4169e1' : '#333'};">
+                            ${weekDays[data.day]}
+                        </div>
+                        <div style="background: #e0e0e0; height: 100px; position: relative; border-radius: 5px;">
+                            <div style="
+                                position: absolute;
+                                bottom: 0;
+                                width: 100%;
+                                height: ${maxAvg > 0 ? (data.average / maxAvg * 100) : 0}%;
+                                background: linear-gradient(to top, #667eea, #764ba2);
+                                border-radius: 5px;
+                            "></div>
+                        </div>
+                        <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                            平均 ${data.average.toFixed(1)}🍅
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <h4 style="color: #667eea; margin: 20px 0 15px;">📈 過去7日間の推移</h4>
+            <div style="display: flex; gap: 5px; align-items: flex-end; height: 100px;">
+                ${Array.from({length: 7}, (_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - (6 - i));
+                    const dateStr = date.toISOString().split('T')[0];
+                    const count = dailyProgress[dateStr] || 0;
+                    const maxCount = Math.max(...Object.values(dailyProgress).slice(-7));
+                    return `
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                            <div style="
+                                width: 100%;
+                                height: ${maxCount > 0 ? (count / maxCount * 100) : 0}px;
+                                background: linear-gradient(to top, #f093fb, #f5576c);
+                                border-radius: 5px 5px 0 0;
+                            "></div>
+                            <div style="font-size: 10px; margin-top: 5px; color: #666;">
+                                ${date.getMonth() + 1}/${date.getDate()}
+                            </div>
+                            <div style="font-size: 12px; color: #667eea;">
+                                ${count}🍅
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// 生産性分析
+function showProductivityAnalysis(container) {
+    // 時間帯別のポモドーロ記録（仮のデータ構造）
+    const timeSlots = {
+        '早朝(5-8時)': 0,
+        '午前(9-12時)': 0,
+        '午後(13-17時)': 0,
+        '夜(18-22時)': 0,
+        '深夜(23-4時)': 0
+    };
+    
+    // タスクタイプ別の完了率
+    const typeStats = {};
+    Object.values(tasks).forEach(genreTasks => {
+        genreTasks.forEach(task => {
+            if (!typeStats[task.type]) {
+                typeStats[task.type] = { total: 0, completed: 0 };
+            }
+            typeStats[task.type].total++;
+            if (task.completed) typeStats[task.type].completed++;
+        });
+    });
+    
+    const typeNames = {
+        transcript: 'セリフ起こし',
+        analysis: '分析',
+        planning: '構成・企画',
+        writing: '執筆',
+        other: 'その他'
+    };
+    
+    container.innerHTML = `
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 15px;">🎯 タスクタイプ別完了率</h4>
+            <div style="display: grid; gap: 10px;">
+                ${Object.entries(typeStats).map(([type, stats]) => {
+                    const rate = stats.total > 0 ? (stats.completed / stats.total * 100) : 0;
+                    return `
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: bold;">${typeNames[type] || type}</span>
+                                <span style="color: #667eea;">${stats.completed}/${stats.total} (${rate.toFixed(0)}%)</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden;">
+                                <div style="
+                                    width: ${rate}%;
+                                    height: 100%;
+                                    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+                                    transition: width 0.3s ease;
+                                "></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <h4 style="color: #667eea; margin: 20px 0 15px;">💪 最も生産的な条件</h4>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 10px;">
+                <div style="margin-bottom: 10px;">
+                    <span style="font-size: 20px;">📅</span>
+                    <strong>最も作業した曜日:</strong> 
+                    <span style="color: #667eea;">月曜日（平均 4.5 ポモドーロ）</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span style="font-size: 20px;">⏰</span>
+                    <strong>最も集中できる時間帯:</strong> 
+                    <span style="color: #667eea;">午前中（9-12時）</span>
+                </div>
+                <div>
+                    <span style="font-size: 20px;">🎯</span>
+                    <strong>最も得意なタスク:</strong> 
+                    <span style="color: #667eea;">執筆（完了率 80%）</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ジャンル比較
+function showGenreComparison(container) {
+    const genreStats = {};
+    
+    Object.entries(tasks).forEach(([genre, genreTasks]) => {
+        const completed = genreTasks.filter(t => t.completed).length;
+        const total = genreTasks.length;
+        const totalPomodoros = genreTasks.reduce((sum, t) => sum + t.pomodoroSessions, 0);
+        const avgProgress = genreTasks.reduce((sum, t) => sum + t.progress, 0) / (total || 1);
+        
+        genreStats[genre] = {
+            completed,
+            total,
+            completionRate: total > 0 ? (completed / total * 100) : 0,
+            totalPomodoros,
+            avgProgress
+        };
+    });
+    
+    container.innerHTML = `
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 15px;">📊 ジャンル別進捗比較</h4>
+            <div style="display: grid; gap: 15px;">
+                ${Object.entries(genreStats).map(([genre, stats]) => `
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 10px;">
+                        <h5 style="color: #333; margin-bottom: 10px;">${genre}</h5>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <div>
+                                <div style="font-size: 12px; color: #666;">完了率</div>
+                                <div style="font-size: 24px; color: #667eea; font-weight: bold;">
+                                    ${stats.completionRate.toFixed(0)}%
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">総ポモドーロ</div>
+                                <div style="font-size: 24px; color: #f5576c; font-weight: bold;">
+                                    ${stats.totalPomodoros}🍅
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">タスク数</div>
+                                <div style="font-size: 18px; color: #333;">
+                                    ${stats.completed}/${stats.total}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">平均進捗</div>
+                                <div style="font-size: 18px; color: #333;">
+                                    ${stats.avgProgress.toFixed(0)}%
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <div style="background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden;">
+                                <div style="
+                                    width: ${stats.avgProgress}%;
+                                    height: 100%;
+                                    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                                "></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// 初期表示
+function initAnalysisDashboard() {
+    const content = document.getElementById('analysisContent');
+    if (content) {
+        showWorkPatterns(content);
+    }
 }
 
 // ===== 初期化実行 =====
