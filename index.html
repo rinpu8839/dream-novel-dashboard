@@ -43,6 +43,18 @@ const deadlineText = new Date(task.endDate).toLocaleDateString('ja-JP');
 
 card.innerHTML = `
 <div class="task-header">
+    <!-- バックアップ・復元ボタン -->
+<div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <button class="btn btn-warning" onclick="exportBackup()">
+        💾 バックアップ保存
+    </button>
+    <button class="btn btn-success" onclick="importBackup()">
+        📂 バックアップ読込
+    </button>
+    <div style="font-size: 12px; color: #666; width: 100%; margin-top: 5px;">
+        ※ 定期的にバックアップを取ることをお勧めします
+    </div>
+</div>
 <div style="display: flex; align-items: center; flex: 1;">
 <input type="checkbox" class="checkbox" ${task.completed ? 'checked' : ''}
 onchange="toggleTask('${task.id}')">
