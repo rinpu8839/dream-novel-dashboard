@@ -41,6 +41,28 @@ body {
     gap: 10px;
 }
 
+.sync-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: #e8f5e9;
+    border-radius: 15px;
+    font-size: 12px;
+    color: #2e7d32;
+    margin-left: auto;
+}
+
+.sync-status.syncing {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.sync-status.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
 .motivation-bar {
     width: 200px;
     height: 20px;
@@ -409,17 +431,144 @@ body {
     transition: width 0.3s ease;
 }
 
-input[type="text"], input[type="date"], input[type="number"], select, textarea {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+/* メモシステムの新しいスタイル */
+.memo-section {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
+.memo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.memo-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.memo-tab {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.memo-tab.active {
+    background: #667eea;
+    color: white;
+}
+
+.memo-count {
+    background: rgba(255,255,255,0.3);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.tag-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag:hover {
+    background: #bbdefb;
+}
+
+.tag.selected {
+    background: #667eea;
+    color: white;
+}
+
+.tag-remove {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.tag-remove:hover {
+    opacity: 1;
+}
+
+.memo-item {
+    background: #f9f9f9;
+    border-left: 3px solid #667eea;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.memo-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.memo-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #666;
+}
+
+.memo-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.memo-search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.memo-search:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* レスポンシブ対応 */
 @media (max-width: 768px) {
     .title {
-        font-size: 20px;
+        font-size: 18px;
+    }
+    
+    .sync-status {
+        font-size: 10px;
+        padding: 3px 8px;
     }
     
     .pomodoro-timer {
@@ -434,6 +583,82 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
     .modal-content {
         padding: 15px;
     }
+    
+    .memo-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .memo-tab {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
+
+/* アニメーション */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+/* 通知スタイル */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 10000;
+    animation: slideIn 0.5s ease;
+    max-width: 300px;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+}
+
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+textarea {
+    resize: vertical;
 }
 </style>
 </head>
@@ -444,10 +669,14 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
         <div class="title">
             <span>✨</span>
             <span>夢小説創作ダッシュボード</span>
+            <div class="sync-status" id="syncStatus">
+                <span id="syncIcon">☁️</span>
+                <span id="syncText">同期済み</span>
+            </div>
         </div>
         
-        <!-- バックアップボタン -->
-        <div style="margin-top: 10px;">
+        <!-- ボタン群 -->
+        <div style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;">
             <button class="btn btn-warning btn-small" onclick="downloadBackup()">
                 💾 バックアップ
             </button>
@@ -456,6 +685,9 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
             </button>
             <button class="btn btn-small" onclick="showThemeModal()" style="background: #9f7aea; color: white;">
                 🎨 テーマ
+            </button>
+            <button class="btn btn-small" onclick="forceSyncData()" style="background: #00bcd4; color: white;">
+                🔄 同期
             </button>
         </div>
         
@@ -541,12 +773,39 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
     <!-- タスクリスト -->
     <div id="taskList"></div>
     
-    <!-- クイックメモ -->
-    <div class="memo-section" style="background: white; border-radius: 10px; padding: 15px; margin-top: 20px;">
-        <h3 style="color: #333;">💡 アイデアメモ</h3>
-        <textarea id="quickMemo" style="width: 100%; min-height: 100px; margin-top: 10px;" 
-                  placeholder="アイデアや気づきをメモ..." onchange="saveMemo()"></textarea>
-        <div id="savedMemos" style="margin-top: 10px;"></div>
+    <!-- 改良版メモシステム -->
+    <div class="memo-section">
+        <div class="memo-header">
+            <h3 style="color: #333;">💡 アイデアメモ管理</h3>
+            <button class="btn btn-primary btn-small" onclick="showMemoModal()">
+                + 新規メモ
+            </button>
+        </div>
+        
+        <input type="text" class="memo-search" id="memoSearch" placeholder="🔍 メモを検索..." onkeyup="searchMemos()">
+        
+        <div class="memo-tabs">
+            <div class="memo-tab active" onclick="filterMemosByTab('all')">
+                すべて <span class="memo-count" id="countAll">0</span>
+            </div>
+            <div class="memo-tab" onclick="filterMemosByTab('idea')">
+                💭 アイデア <span class="memo-count" id="countIdea">0</span>
+            </div>
+            <div class="memo-tab" onclick="filterMemosByTab('character')">
+                👤 キャラ設定 <span class="memo-count" id="countCharacter">0</span>
+            </div>
+            <div class="memo-tab" onclick="filterMemosByTab('plot')">
+                📝 プロット <span class="memo-count" id="countPlot">0</span>
+            </div>
+            <div class="memo-tab" onclick="filterMemosByTab('writing')">
+                ✍️ 執筆中 <span class="memo-count" id="countWriting">0</span>
+            </div>
+            <div class="memo-tab" onclick="filterMemosByTab('completed')">
+                ✅ 完了 <span class="memo-count" id="countCompleted">0</span>
+            </div>
+        </div>
+        
+        <div id="memoList" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
     
     <!-- 統計 -->
@@ -562,6 +821,10 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
         <div class="stat-card">
             <div class="stat-number" id="wordCount">0</div>
             <div class="stat-label">執筆文字数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="memoCount">0</div>
+            <div class="stat-label">メモ数</div>
         </div>
     </div>
     
@@ -592,6 +855,48 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
 </div>
 
 <!-- モーダルウィンドウ群 -->
+
+<!-- メモ追加/編集モーダル -->
+<div id="memoModal" class="modal">
+    <div class="modal-content">
+        <h3 id="memoModalTitle">新規メモ作成</h3>
+        
+        <textarea id="memoInput" placeholder="アイデアを入力..." rows="5" style="margin-top: 10px;"></textarea>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-size: 14px; color: #666;">ジャンル選択</label>
+            <select id="memoGenre" style="margin-top: 5px;">
+                <option value="">未分類</option>
+            </select>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-size: 14px; color: #666;">タグ選択（複数可）</label>
+            <div class="tag-input-container" id="memoTags">
+                <div class="tag" data-tag="idea" onclick="toggleTag(this)">💭 アイデア</div>
+                <div class="tag" data-tag="character" onclick="toggleTag(this)">👤 キャラ設定</div>
+                <div class="tag" data-tag="plot" onclick="toggleTag(this)">📝 プロット</div>
+                <div class="tag" data-tag="dialogue" onclick="toggleTag(this)">💬 セリフ</div>
+                <div class="tag" data-tag="scene" onclick="toggleTag(this)">🎬 シーン</div>
+                <div class="tag" data-tag="worldbuilding" onclick="toggleTag(this)">🌍 世界観</div>
+                <div class="tag" data-tag="writing" onclick="toggleTag(this)">✍️ 執筆中</div>
+                <div class="tag" data-tag="completed" onclick="toggleTag(this)">✅ 完了</div>
+                <div class="tag" data-tag="important" onclick="toggleTag(this)">⭐ 重要</div>
+                <div class="tag" data-tag="reference" onclick="toggleTag(this)">📚 参考資料</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-size: 14px; color: #666;">カスタムタグ（カンマ区切り）</label>
+            <input type="text" id="customTags" placeholder="例: 夢主設定, 第1章, 伏線">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveMemoWithTags()" style="flex: 1;">保存</button>
+            <button class="btn" onclick="hideModal('memoModal')" style="flex: 1; background: #ccc;">キャンセル</button>
+        </div>
+    </div>
+</div>
 
 <!-- ジャンル追加モーダル -->
 <div id="genreModal" class="modal">
@@ -679,8 +984,14 @@ let currentTaskId = null;
 let currentEditGenre = null;
 let currentDetailTask = null;
 let dailyProgress = {};
+let memos = [];
+let currentMemoFilter = 'all';
+let currentEditMemoId = null;
+let syncInterval;
 
 const STORAGE_KEY = 'dreamNovelData';
+const SYNC_KEY = 'dreamNovelSync';
+const MEMO_KEY = 'dreamNovelMemos';
 
 // 励ましの言葉
 const quotes = [
@@ -696,6 +1007,347 @@ const quotes = [
     "あなたにしか書けない物語があります。自信を持って！"
 ];
 
+// ===== 同期機能 =====
+function generateSyncId() {
+    if (!localStorage.getItem('syncId')) {
+        const syncId = 'sync_' + Math.random().toString(36).substr(2, 9) + Date.now();
+        localStorage.setItem('syncId', syncId);
+    }
+    return localStorage.getItem('syncId');
+}
+
+function saveToCloud() {
+    const syncId = generateSyncId();
+    const dataToSync = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        memos: memos,
+        selectedGenre: selectedGenre,
+        motivationLevel: motivationLevel,
+        lastSynced: new Date().toISOString(),
+        deviceInfo: navigator.userAgent
+    };
+    
+    // LocalStorageを使った疑似クラウド同期
+    localStorage.setItem(SYNC_KEY + '_' + syncId, JSON.stringify(dataToSync));
+    
+    // 同期状態を更新
+    updateSyncStatus('synced');
+    
+    return true;
+}
+
+function loadFromCloud() {
+    const syncId = generateSyncId();
+    const cloudData = localStorage.getItem(SYNC_KEY + '_' + syncId);
+    
+    if (cloudData) {
+        try {
+            const data = JSON.parse(cloudData);
+            
+            // 最新のデータかチェック
+            const localData = localStorage.getItem(STORAGE_KEY);
+            if (localData) {
+                const local = JSON.parse(localData);
+                if (local.lastSaved && data.lastSynced) {
+                    if (new Date(local.lastSaved) > new Date(data.lastSynced)) {
+                        return false; // ローカルの方が新しい
+                    }
+                }
+            }
+            
+            tasks = data.tasks || {};
+            genres = data.genres || ['TRICK', 'KILLERS'];
+            dailyProgress = data.dailyProgress || {};
+            memos = data.memos || [];
+            selectedGenre = data.selectedGenre || '全体';
+            motivationLevel = data.motivationLevel || 75;
+            
+            return true;
+        } catch (e) {
+            console.error('同期データ読み込みエラー:', e);
+            return false;
+        }
+    }
+    return false;
+}
+
+function updateSyncStatus(status) {
+    const syncIcon = document.getElementById('syncIcon');
+    const syncText = document.getElementById('syncText');
+    const syncStatus = document.getElementById('syncStatus');
+    
+    switch(status) {
+        case 'syncing':
+            syncIcon.textContent = '🔄';
+            syncText.textContent = '同期中...';
+            syncStatus.className = 'sync-status syncing';
+            break;
+        case 'synced':
+            syncIcon.textContent = '☁️';
+            syncText.textContent = '同期済み';
+            syncStatus.className = 'sync-status';
+            break;
+        case 'error':
+            syncIcon.textContent = '⚠️';
+            syncText.textContent = 'エラー';
+            syncStatus.className = 'sync-status error';
+            break;
+    }
+}
+
+function forceSyncData() {
+    updateSyncStatus('syncing');
+    
+    setTimeout(() => {
+        if (saveToCloud()) {
+            showNotification('同期完了', 'データが正常に同期されました', 'success');
+            updateSyncStatus('synced');
+        } else {
+            showNotification('同期エラー', '同期に失敗しました', 'error');
+            updateSyncStatus('error');
+        }
+    }, 1000);
+}
+
+// ===== メモ機能の拡張 =====
+function showMemoModal(memoId = null) {
+    currentEditMemoId = memoId;
+    
+    // ジャンル選択肢を更新
+    const genreSelect = document.getElementById('memoGenre');
+    genreSelect.innerHTML = '<option value="">未分類</option>';
+    genres.forEach(genre => {
+        genreSelect.innerHTML += `<option value="${genre}">${genre}</option>`;
+    });
+    
+    if (memoId) {
+        const memo = memos.find(m => m.id === memoId);
+        if (memo) {
+            document.getElementById('memoModalTitle').textContent = 'メモを編集';
+            document.getElementById('memoInput').value = memo.text;
+            document.getElementById('memoGenre').value = memo.genre || '';
+            document.getElementById('customTags').value = memo.customTags ? memo.customTags.join(', ') : '';
+            
+            // タグの選択状態を復元
+            document.querySelectorAll('#memoTags .tag').forEach(tag => {
+                tag.classList.remove('selected');
+                if (memo.tags && memo.tags.includes(tag.dataset.tag)) {
+                    tag.classList.add('selected');
+                }
+            });
+        }
+    } else {
+        document.getElementById('memoModalTitle').textContent = '新規メモ作成';
+        document.getElementById('memoInput').value = '';
+        document.getElementById('memoGenre').value = selectedGenre !== '全体' ? selectedGenre : '';
+        document.getElementById('customTags').value = '';
+        document.querySelectorAll('#memoTags .tag').forEach(tag => {
+            tag.classList.remove('selected');
+        });
+    }
+    
+    document.getElementById('memoModal').style.display = 'flex';
+}
+
+function toggleTag(element) {
+    element.classList.toggle('selected');
+}
+
+function saveMemoWithTags() {
+    const text = document.getElementById('memoInput').value.trim();
+    if (!text) {
+        showNotification('エラー', 'メモ内容を入力してください', 'error');
+        return;
+    }
+    
+    const selectedTags = [];
+    document.querySelectorAll('#memoTags .tag.selected').forEach(tag => {
+        selectedTags.push(tag.dataset.tag);
+    });
+    
+    const customTagsInput = document.getElementById('customTags').value;
+    const customTags = customTagsInput ? customTagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+    
+    const memo = {
+        id: currentEditMemoId || Date.now(),
+        text: text,
+        genre: document.getElementById('memoGenre').value,
+        tags: selectedTags,
+        customTags: customTags,
+        date: currentEditMemoId ? 
+            memos.find(m => m.id === currentEditMemoId).date : 
+            new Date().toISOString(),
+        lastModified: new Date().toISOString()
+    };
+    
+    if (currentEditMemoId) {
+        const index = memos.findIndex(m => m.id === currentEditMemoId);
+        if (index !== -1) {
+            memos[index] = memo;
+        }
+    } else {
+        memos.unshift(memo);
+    }
+    
+    saveMemos();
+    displayMemos();
+    hideModal('memoModal');
+    showNotification('保存完了', 'メモが保存されました', 'success');
+}
+
+function saveMemos() {
+    localStorage.setItem(MEMO_KEY, JSON.stringify(memos));
+    updateMemoCount();
+    autoSave();
+}
+
+function loadMemos() {
+    const saved = localStorage.getItem(MEMO_KEY);
+    if (saved) {
+        try {
+            memos = JSON.parse(saved);
+        } catch (e) {
+            memos = [];
+        }
+    }
+}
+
+function displayMemos() {
+    const container = document.getElementById('memoList');
+    if (!container) return;
+    
+    let filteredMemos = [...memos];
+    
+    // フィルタリング
+    if (currentMemoFilter !== 'all') {
+        filteredMemos = filteredMemos.filter(memo => 
+            memo.tags && memo.tags.includes(currentMemoFilter)
+        );
+    }
+    
+    // 検索フィルタ
+    const searchTerm = document.getElementById('memoSearch').value.toLowerCase();
+    if (searchTerm) {
+        filteredMemos = filteredMemos.filter(memo => 
+            memo.text.toLowerCase().includes(searchTerm) ||
+            (memo.genre && memo.genre.toLowerCase().includes(searchTerm)) ||
+            (memo.customTags && memo.customTags.some(tag => tag.toLowerCase().includes(searchTerm)))
+        );
+    }
+    
+    container.innerHTML = filteredMemos.map(memo => {
+        const allTags = [...(memo.tags || []), ...(memo.customTags || [])];
+        const tagIcons = {
+            idea: '💭',
+            character: '👤',
+            plot: '📝',
+            dialogue: '💬',
+            scene: '🎬',
+            worldbuilding: '🌍',
+            writing: '✍️',
+            completed: '✅',
+            important: '⭐',
+            reference: '📚'
+        };
+        
+        return `
+            <div class="memo-item fade-in">
+                <div style="white-space: pre-wrap;">${memo.text}</div>
+                <div class="memo-meta">
+                    <div class="memo-tags">
+                        ${memo.genre ? `<span class="tag" style="background: #e8f5e9; color: #2e7d32;">${memo.genre}</span>` : ''}
+                        ${allTags.map(tag => `
+                            <span class="tag" style="padding: 2px 8px; font-size: 11px;">
+                                ${tagIcons[tag] || ''} ${tag}
+                            </span>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span>${new Date(memo.date).toLocaleDateString('ja-JP')}</span>
+                        <button onclick="showMemoModal(${memo.id})" style="padding: 2px 8px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">編集</button>
+                        <button onclick="deleteMemo(${memo.id})" style="padding: 2px 8px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">削除</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('') || '<div style="text-align: center; color: #999; padding: 20px;">メモがありません</div>';
+    
+    updateMemoCount();
+}
+
+function filterMemosByTab(filter) {
+    currentMemoFilter = filter;
+    
+    // タブのアクティブ状態を更新
+    document.querySelectorAll('.memo-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.closest('.memo-tab').classList.add('active');
+    
+    displayMemos();
+}
+
+function searchMemos() {
+    displayMemos();
+}
+
+function updateMemoCount() {
+    const counts = {
+        all: memos.length,
+        idea: 0,
+        character: 0,
+        plot: 0,
+        writing: 0,
+        completed: 0
+    };
+    
+    memos.forEach(memo => {
+        if (memo.tags) {
+            memo.tags.forEach(tag => {
+                if (counts.hasOwnProperty(tag)) {
+                    counts[tag]++;
+                }
+            });
+        }
+    });
+    
+    Object.keys(counts).forEach(key => {
+        const element = document.getElementById('count' + key.charAt(0).toUpperCase() + key.slice(1));
+        if (element) {
+            element.textContent = counts[key];
+        }
+    });
+    
+    document.getElementById('memoCount').textContent = memos.length;
+}
+
+function deleteMemo(id) {
+    if (confirm('このメモを削除しますか？')) {
+        memos = memos.filter(m => m.id !== id);
+        saveMemos();
+        displayMemos();
+        showNotification('削除完了', 'メモを削除しました', 'success');
+    }
+}
+
+// ===== 通知システム =====
+function showNotification(title, message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
+        <div style="font-size: 14px;">${message}</div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.5s ease';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+
 // ===== データ永続化関数 =====
 function saveAllData() {
     const dataToSave = {
@@ -707,10 +1359,21 @@ function saveAllData() {
         lastSaved: new Date().toISOString()
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    console.log('データ保存完了:', new Date().toLocaleTimeString());
+    
+    // クラウド同期
+    if (navigator.onLine) {
+        saveToCloud();
+    }
 }
 
 function loadAllData() {
+    // まずクラウドから読み込みを試みる
+    if (navigator.onLine && loadFromCloud()) {
+        console.log('クラウドからデータを読み込みました');
+        return true;
+    }
+    
+    // ローカルストレージから読み込み
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
         try {
@@ -722,7 +1385,7 @@ function loadAllData() {
             motivationLevel = data.motivationLevel || 75;
             
             validateData();
-            console.log('データ読み込み完了:', data.lastSaved);
+            console.log('ローカルデータ読み込み完了:', data.lastSaved);
             return true;
         } catch (e) {
             console.error('データ読み込みエラー:', e);
@@ -783,7 +1446,9 @@ function downloadBackup() {
         tasks: tasks,
         genres: genres,
         dailyProgress: dailyProgress,
-        exportDate: new Date().toISOString()
+        memos: memos,
+        exportDate: new Date().toISOString(),
+        version: '2.0'
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
@@ -792,7 +1457,7 @@ function downloadBackup() {
     a.download = `dream-novel-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    alert('バックアップファイルをダウンロードしました');
+    showNotification('バックアップ完了', 'ファイルをダウンロードしました', 'success');
 }
 
 function uploadBackup() {
@@ -810,14 +1475,17 @@ function uploadBackup() {
                 tasks = data.tasks || {};
                 genres = data.genres || ['TRICK', 'KILLERS'];
                 dailyProgress = data.dailyProgress || {};
+                memos = data.memos || [];
                 saveAllData();
+                saveMemos();
                 rebuildGenreTabs();
                 renderTasks();
                 updateStats();
                 updateProgressSection();
-                alert('復元完了！');
+                displayMemos();
+                showNotification('復元完了', 'データを復元しました', 'success');
             } catch (e) {
-                alert('ファイル読み込みエラー');
+                showNotification('エラー', 'ファイルの読み込みに失敗しました', 'error');
             }
         };
         reader.readAsText(file);
@@ -829,6 +1497,7 @@ function uploadBackup() {
 function init() {
     loadTheme();
     const hasData = loadAllData();
+    loadMemos();
     
     if (!hasData || Object.keys(tasks).length === 0) {
         const today = new Date().toISOString().split('T')[0];
@@ -849,6 +1518,25 @@ function init() {
     checkAchievements();
     displayMemos();
     initAnalysisDashboard();
+    
+    // 自動同期設定（5分ごと）
+    syncInterval = setInterval(() => {
+        if (navigator.onLine) {
+            saveToCloud();
+        }
+    }, 5 * 60 * 1000);
+    
+    // オンライン/オフライン状態の監視
+    window.addEventListener('online', () => {
+        updateSyncStatus('syncing');
+        setTimeout(() => {
+            saveToCloud();
+        }, 1000);
+    });
+    
+    window.addEventListener('offline', () => {
+        updateSyncStatus('error');
+    });
 }
 
 // 初期タスク生成
@@ -1057,7 +1745,7 @@ function rescheduleOverdue() {
     });
     renderTasks();
     checkOverdueTasks();
-    alert('期限を再設定しました！新しい期限で頑張りましょう！');
+    showNotification('期限再設定', '新しい期限で頑張りましょう！', 'success');
     autoSave();
 }
 
@@ -1166,6 +1854,7 @@ function saveTask() {
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskDetails').value = '';
     autoSave();
+    showNotification('タスク追加', '新しいタスクを追加しました', 'success');
 }
 
 // タスク削除
@@ -1177,6 +1866,7 @@ function deleteTask(taskId) {
         renderTasks();
         updateStats();
         autoSave();
+        showNotification('タスク削除', 'タスクを削除しました', 'success');
     }
 }
 
@@ -1190,6 +1880,7 @@ function toggleTask(taskId) {
                     task.progress = 100;
                     motivationLevel = Math.min(100, motivationLevel + 10);
                     updateMotivation();
+                    showNotification('おめでとう！', 'タスクを完了しました！🎉', 'success');
                 }
             }
             return task;
@@ -1198,6 +1889,7 @@ function toggleTask(taskId) {
     renderTasks();
     updateStats();
     updateProgressSection();
+    checkAchievements();
     autoSave();
 }
 
@@ -1249,8 +1941,9 @@ function completePomodoro() {
     renderTasks();
     updateStats();
     updateProgressSection();
+    checkAchievements();
     
-    alert('🎉 ポモドーロ完了！5分休憩してください');
+    showNotification('ポモドーロ完了！', '5分休憩してください 🎉', 'success');
     autoSave();
 }
 
@@ -1478,6 +2171,7 @@ function addGenre() {
         updateProgressSection();
         motivationLevel = Math.min(100, motivationLevel + 10);
         updateMotivation();
+        showNotification('ジャンル追加', `${genreName}を追加しました`, 'success');
     }
     
     input.value = '';
@@ -1758,7 +2452,8 @@ function showWeeklyView() {
                     ${date.getMonth() + 1}/${date.getDate()}
                 </div>
                 <div style="font-size: 10px; color: #666;">
-                    ${dayTasks.map(t => `• ${t.title.substring(0, 8)}...`).join('<br>')}
+                    ${dayTasks.slice(0, 3).map(t => `• ${t.title.substring(0, 8)}...`).join('<br>')}
+                    ${dayTasks.length > 3 ? `<br>他${dayTasks.length - 3}件` : ''}
                 </div>
                 ${dayTasks.length > 0 ? `<div style="text-align: center; font-size: 12px; color: #667eea; margin-top: 5px;">${dayTasks.length}件</div>` : ''}
             </div>
@@ -1767,50 +2462,6 @@ function showWeeklyView() {
     
     html += '</div>';
     document.getElementById('weeklySchedule').innerHTML = html;
-}
-
-// ===== メモ機能 =====
-function saveMemo() {
-    const memo = document.getElementById('quickMemo').value;
-    if (!memo.trim()) return;
-    
-    const memos = JSON.parse(localStorage.getItem('memos') || '[]');
-    memos.unshift({
-        id: Date.now(),
-        text: memo,
-        date: new Date().toISOString(),
-        genre: selectedGenre
-    });
-    
-    if (memos.length > 10) memos.pop();
-    
-    localStorage.setItem('memos', JSON.stringify(memos));
-    document.getElementById('quickMemo').value = '';
-    displayMemos();
-}
-
-function displayMemos() {
-    const memos = JSON.parse(localStorage.getItem('memos') || '[]');
-    const container = document.getElementById('savedMemos');
-    if (!container) return;
-    
-    container.innerHTML = memos.map(memo => `
-        <div style="background: #f5f5f5; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #667eea; font-weight: bold;">${memo.genre}</span>
-                <span style="color: #999;">${new Date(memo.date).toLocaleDateString('ja-JP')}</span>
-            </div>
-            <div style="margin-top: 5px;">${memo.text}</div>
-            <button onclick="deleteMemo(${memo.id})" style="margin-top: 5px; font-size: 10px; padding: 2px 5px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer;">削除</button>
-        </div>
-    `).join('');
-}
-
-function deleteMemo(id) {
-    let memos = JSON.parse(localStorage.getItem('memos') || '[]');
-    memos = memos.filter(m => m.id !== id);
-    localStorage.setItem('memos', JSON.stringify(memos));
-    displayMemos();
 }
 
 // ===== 実績バッジ機能 =====
@@ -1822,7 +2473,8 @@ const achievements = {
     genreMaster: { icon: '👑', name: 'ジャンル制覇', condition: '1ジャンル全タスク完了' },
     earlyBird: { icon: '🌅', name: '早起き作家', condition: '朝6時前に作業開始' },
     nightOwl: { icon: '🦉', name: '夜型作家', condition: '深夜0時以降に作業' },
-    speedWriter: { icon: '⚡', name: 'スピードライター', condition: '1日で10000字執筆' }
+    speedWriter: { icon: '⚡', name: 'スピードライター', condition: '1日で10000字執筆' },
+    memoMaster: { icon: '📝', name: 'メモの達人', condition: '50個のメモを作成' }
 };
 
 function checkAchievements() {
@@ -1852,6 +2504,11 @@ function checkAchievements() {
         showAchievementNotification(achievements.tenPomodoros);
     }
     
+    if (memos.length >= 50 && !earned.includes('memoMaster')) {
+        earned.push('memoMaster');
+        showAchievementNotification(achievements.memoMaster);
+    }
+    
     localStorage.setItem('achievements', JSON.stringify(earned));
     displayAchievements(earned);
 }
@@ -1874,18 +2531,7 @@ function displayAchievements(earned) {
 
 function showAchievementNotification(achievement) {
     const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        z-index: 10000;
-        animation: slideIn 0.5s ease;
-    `;
+    notification.className = 'notification success';
     notification.innerHTML = `
         <div style="font-size: 18px; margin-bottom: 5px;">🎉 実績解除！</div>
         <div style="display: flex; align-items: center; gap: 10px;">
