@@ -542,49 +542,7 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
         <div id="aiAdvice">
             分析中...
         </div>
-    </div>
-    function showWeeklyView() {
-    const today = new Date();
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay());
-    
-    let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px;">';
-    const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
-    
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(weekStart);
-        date.setDate(weekStart.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-        const isToday = date.toDateString() === today.toDateString();
-        
-        // その日のタスクを取得
-        const dayTasks = [];
-        Object.values(tasks).forEach(genreTasks => {
-            genreTasks.forEach(task => {
-                if (!task.completed && 
-                    new Date(task.startDate) <= date && 
-                    new Date(task.endDate) >= date) {
-                    dayTasks.push(task);
-                }
-            });
-        });
-        
-        html += `
-            <div style="background: white; border-radius: 8px; padding: 8px; ${isToday ? 'border: 2px solid #667eea;' : ''}">
-                <div style="font-weight: bold; text-align: center; color: ${i === 0 ? '#ff6b6b' : i === 6 ? '#4169e1' : '#333'};">
-                    ${weekDays[i]}
-                </div>
-                <div style="font-size: 12px; text-align: center; margin: 5px 0;">
-                    ${date.getMonth() + 1}/${date.getDate()}
-                </div>
-                <div style="font-size: 10px; color: #666;">
-                    ${dayTasks.map(t => `• ${t.title.substring(0, 8)}...`).join('<br>')}
-                </div>
-                ${dayTasks.length > 0 ? `<div style="text-align: center; font-size: 12px; color: #667eea; margin-top: 5px;">${dayTasks.length}件</div>` : ''}
-            </div>
-        `;
-    }
-    
+    </div> 
     html += '</div>';
     document.getElementById('weeklySchedule').innerHTML = html;
 }
@@ -601,48 +559,7 @@ showWeeklyView();
               placeholder="アイデアや気づきをメモ..." onchange="saveMemo()"></textarea>
     <div id="savedMemos" style="margin-top: 10px;"></div>
 </div>
-function saveMemo() {
-    const memo = document.getElementById('quickMemo').value;
-    if (!memo.trim()) return;
-    
-    const memos = JSON.parse(localStorage.getItem('memos') || '[]');
-    memos.unshift({
-        id: Date.now(),
-        text: memo,
-        date: new Date().toISOString(),
-        genre: selectedGenre
-    });
-    
-    // 最新10件のみ保持
-    if (memos.length > 10) memos.pop();
-    
-    localStorage.setItem('memos', JSON.stringify(memos));
-    document.getElementById('quickMemo').value = '';
-    displayMemos();
-}
-
-function displayMemos() {
-    const memos = JSON.parse(localStorage.getItem('memos') || '[]');
-    const container = document.getElementById('savedMemos');
-    
-    container.innerHTML = memos.map(memo => `
-        <div style="background: #f5f5f5; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #667eea; font-weight: bold;">${memo.genre}</span>
-                <span style="color: #999;">${new Date(memo.date).toLocaleDateString('ja-JP')}</span>
-            </div>
-            <div style="margin-top: 5px;">${memo.text}</div>
-            <button onclick="deleteMemo(${memo.id})" style="margin-top: 5px; font-size: 10px; padding: 2px 5px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer;">削除</button>
-        </div>
-    `).join('');
-}
-
-function deleteMemo(id) {
-    let memos = JSON.parse(localStorage.getItem('memos') || '[]');
-    memos = memos.filter(m => m.id !== id);
-    localStorage.setItem('memos', JSON.stringify(memos));
-    displayMemos();
-}
+                        
     
     <!-- 統計 -->
     <div class="stats-grid">
@@ -687,95 +604,7 @@ function deleteMemo(id) {
     <h3 style="color: #333; margin-bottom: 10px;">🏆 獲得バッジ</h3>
     <div id="achievementBadges" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
 </div>
-                        const achievements = {
-    firstTask: { icon: '🎯', name: '初めての一歩', condition: 'タスクを1つ完了' },
-    fivePomodoros: { icon: '🍅', name: 'トマト農家', condition: '5ポモドーロ達成' },
-    tenPomodoros: { icon: '🌟', name: 'ポモドーロマスター', condition: '10ポモドーロ達成' },
-    weekStreak: { icon: '🔥', name: '継続の鬼', condition: '7日連続作業' },
-    genreMaster: { icon: '👑', name: 'ジャンル制覇', condition: '1ジャンル全タスク完了' },
-    earlyBird: { icon: '🌅', name: '早起き作家', condition: '朝6時前に作業開始' },
-    nightOwl: { icon: '🦉', name: '夜型作家', condition: '深夜0時以降に作業' },
-    speedWriter: { icon: '⚡', name: 'スピードライター', condition: '1日で10000字執筆' }
-};
-
-function checkAchievements() {
-    const earned = JSON.parse(localStorage.getItem('achievements') || '[]');
-    let completedTasks = 0;
-    let totalPomodoros = 0;
-    
-    Object.values(tasks).forEach(genreTasks => {
-        genreTasks.forEach(task => {
-            if (task.completed) completedTasks++;
-            totalPomodoros += task.pomodoroSessions;
-        });
-    });
-    
-    // 実績チェック
-    if (completedTasks >= 1 && !earned.includes('firstTask')) {
-        earned.push('firstTask');
-        showAchievementNotification(achievements.firstTask);
-    }
-    
-    if (totalPomodoros >= 5 && !earned.includes('fivePomodoros')) {
-        earned.push('fivePomodoros');
-        showAchievementNotification(achievements.fivePomodoros);
-    }
-    
-    if (totalPomodoros >= 10 && !earned.includes('tenPomodoros')) {
-        earned.push('tenPomodoros');
-        showAchievementNotification(achievements.tenPomodoros);
-    }
-    
-    localStorage.setItem('achievements', JSON.stringify(earned));
-    displayAchievements(earned);
-}
-
-function displayAchievements(earned) {
-    const container = document.getElementById('achievementBadges');
-    if (!container) return;
-    
-    container.innerHTML = earned.map(key => {
-        const achievement = achievements[key];
-        return `
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; min-width: 80px;">
-                <div style="font-size: 24px;">${achievement.icon}</div>
-                <div style="font-size: 10px; margin-top: 5px;">${achievement.name}</div>
-            </div>
-        `;
-    }).join('');
-}
-
-function showAchievementNotification(achievement) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        z-index: 10000;
-        animation: slideIn 0.5s ease;
-    `;
-    notification.innerHTML = `
-        <div style="font-size: 18px; margin-bottom: 5px;">🎉 実績解除！</div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 24px;">${achievement.icon}</span>
-            <div>
-                <div style="font-weight: bold;">${achievement.name}</div>
-                <div style="font-size: 12px;">${achievement.condition}</div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.5s ease';
-        setTimeout(() => notification.remove(), 500);
-    }, 3000);
-}
+                       
 
 <!-- ジャンル追加モーダル -->
 <div id="genreModal" class="modal">
@@ -2013,7 +1842,17 @@ function initAnalysisDashboard() {
         showWorkPatterns(content);
     }
 }
+// ここに showWeeklyView() 関数を貼り付け
+function showWeeklyView() {
+    const today = new Date();
+    // ... 関数の中身 ...
+}
 
+// ===== 初期化実行 =====
+window.addEventListener('DOMContentLoaded', () => {
+    init();
+});
+    
 // ===== 初期化実行 =====
 window.addEventListener('DOMContentLoaded', () => {
     init();
