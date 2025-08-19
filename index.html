@@ -573,4 +573,612 @@
     </style>
 </head>
 <body>
+<div class="container">
+    <!-- ヘッダー -->
+    <div class="header">
+        <div class="title">
+            <span>✨</span>
+            <span>夢小説創作ダッシュボード</span>
+            <div class="sync-indicator" id="syncIndicator">
+                <span id="syncText">✓ 自動保存中</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+            <button class="btn btn-success btn-small" onclick="exportData()">
+                💾 エクスポート
+            </button>
+            <button class="btn btn-warning btn-small" onclick="document.getElementById('importFile').click()">
+                📂 インポート
+            </button>
+            <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importData(event)">
+            <button class="btn btn-secondary btn-small" onclick="showDataStatus()">
+                📊 データ状態確認
+            </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 15px;">
+            <div>
+                <div style="font-size: 14px; color: #999;">モチベーション</div>
+                <div class="motivation-bar">
+                    <div class="motivation-fill" id="motivationBar" style="width: 75%;"></div>
+                </div>
+                <div id="motivationText" style="font-size: 12px; color: #999;">いい感じ！ 75%</div>
+            </div>
+            
+            <div class="pomodoro-timer">
+                <span>🍅</span>
+                <span id="pomodoroTime">25:00</span>
+                <button class="btn btn-primary btn-small" onclick="togglePomodoro()">開始</button>
+                <button class="btn btn-secondary btn-small" onclick="pausePomodoro()">⏸</button>
+                <button class="btn btn-secondary btn-small" onclick="resetPomodoro()">↻</button>
+            </div>
+        </div>
+        
+        <div class="genre-tabs" id="genreTabs">
+            <div class="genre-tab active" onclick="selectGenre('全体')">全体</div>
+            <button class="btn btn-success" onclick="showAddGenreModal()">+ ジャンル追加</button>
+        </div>
+    </div>
+
+    <!-- 今週の目標（改善版） -->
+    <div class="today-progress">
+        <h3 style="color: #fff;">🎯 今週の目標</h3>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+            <input type="text" id="weeklyGoal" placeholder="例: 夢小説を2作品完成させる" 
+                   style="flex: 1;" onblur="saveWeeklyGoal()">
+            <button class="btn btn-primary btn-small" onclick="saveWeeklyGoal()">保存</button>
+        </div>
+        <div id="goalStatus" style="margin-top: 10px; color: #999; font-size: 14px;"></div>
+    </div>
+
+    <!-- 習慣トラッカー（新規追加） -->
+    <div class="habit-tracker">
+        <h3 style="color: #fff; margin-bottom: 15px;">📈 習慣トラッカー</h3>
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 20px;">
+                <div style="color: #999; font-size: 12px;">分析作業</div>
+                <div style="color: #999; font-size: 12px;">創作作業</div>
+            </div>
+            <div>
+                <div id="habitCalendar"></div>
+            </div>
+        </div>
+        <div style="margin-top: 15px; display: flex; gap: 20px; font-size: 12px; color: #999;">
+            <span>凡例:</span>
+            <span>🟢 1-2時間</span>
+            <span>🟡 3-4時間</span>
+            <span>🔴 5時間以上</span>
+        </div>
+    </div>
+    
+    <!-- 進捗状況 -->
+    <div class="progress-section">
+        <h3>📊 現在の進捗状況</h3>
+        <div id="currentFocus" style="margin: 10px 0; font-size: 14px;"></div>
+        <div id="genreProgressBars"></div>
+    </div>
+    
+    <!-- 今日の達成度 -->
+    <div class="today-progress">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="color: #fff;">📊 今日の達成度</h3>
+                <div class="pomodoro-dots" id="todayProgress">
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                    <div class="pomodoro-dot"></div>
+                </div>
+                <div style="font-size: 14px; color: #999;">
+                    <span id="todayCount">0</span>/8 ポモドーロ完了
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="showCalendarModal()">
+                📅 カレンダー表示
+            </button>
+        </div>
+    </div>
+    
+    <!-- AIアドバイス -->
+    <div class="ai-advice">
+        <h3 style="margin-bottom: 10px;">🤖 AI推奨: 優先タスク</h3>
+        <div id="aiAdvice">
+            分析中...
+        </div>
+    </div>
+    
+    <!-- タスクリスト -->
+    <div id="taskList"></div>
+
+    <!-- メモセクション -->
+    <div class="today-progress" style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="color: #fff;">📝 メモ</h3>
+            <button class="btn btn-primary btn-small" onclick="showMemoModal()">+ メモ追加</button>
+        </div>
+        <div id="memoList"></div>
+    </div>
+
+    <!-- 分析レポート（新規追加） -->
+    <div class="today-progress" style="margin-top: 20px;">
+        <h3 style="color: #fff; margin-bottom: 15px;">📊 作業分析レポート</h3>
+        <div id="analysisReport"></div>
+    </div>
+    
+    <!-- 統計 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="completedCount">0</div>
+            <div class="stat-label">完了タスク</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="pomodoroCount">0</div>
+            <div class="stat-label">総ポモドーロ</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="wordCount">0</div>
+            <div class="stat-label">執筆文字数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="activeStreak">0</div>
+            <div class="stat-label">連続作業日数</div>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル：ジャンル追加/編集 -->
+<div id="genreModal" class="modal">
+    <div class="modal-content">
+        <h3 id="genreModalTitle">新規ジャンル追加</h3>
+        <input type="text" id="genreInput" placeholder="ジャンル名を入力">
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="saveGenre()" style="flex: 1;">保存</button>
+            <button class="btn btn-secondary" onclick="hideModal('genreModal')" style="flex: 1;">キャンセル</button>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル：タスク追加/編集 -->
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <h3 id="taskModalTitle">タスク追加</h3>
+        <input type="text" id="taskTitle" placeholder="タスク名">
+        <select id="taskType" onchange="updateDefaultSubtasks()">
+            <option value="transcript">セリフ起こし</option>
+            <option value="character_analysis">キャラクター分析</option>
+            <option value="world_analysis">世界観分析</option>
+            <option value="planning">伏線展開ファイル</option>
+            <option value="writing">夢小説執筆</option>
+            <option value="other">その他</option>
+        </select>
+        
+        <div style="margin: 10px 0;">
+            <label style="color: #999;">
+                <input type="checkbox" id="tagR18"> R-18
+            </label>
+        </div>
+
+        <div style="margin: 10px 0;">
+            <label style="color: #999;">章構成（執筆タスクの場合）</label>
+            <input type="number" id="chapterCount" placeholder="章数" min="1" value="3">
+            <input type="number" id="wordsPerChapter" placeholder="1話あたりの文字数" min="100" value="8000">
+        </div>
+
+        <input type="date" id="taskStartDate">
+        <input type="date" id="taskEndDate">
+        <input type="number" id="taskPomodoros" placeholder="予定ポモドーロ数" min="1" value="4">
+        <select id="taskPriority">
+            <option value="high">優先度: 高</option>
+            <option value="medium">優先度: 中</option>
+            <option value="low">優先度: 低</option>
+        </select>
+        <textarea id="taskDetails" placeholder="作業詳細" rows="3"></textarea>
+        
+        <div style="margin: 10px 0;">
+            <label style="color: #999;">サブタスク</label>
+            <div id="subtaskList"></div>
+            <button class="btn btn-secondary btn-small" onclick="addSubtask()">+ サブタスク追加</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="saveTask()" style="flex: 1;">保存</button>
+            <button class="btn btn-secondary" onclick="hideModal('taskModal')" style="flex: 1;">キャンセル</button>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル：タスク詳細 -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <h3 id="detailTitle">タスク詳細</h3>
+        <div id="detailContent"></div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="startDetailPomodoro()" style="flex: 1;">作業開始</button>
+            <button class="btn btn-warning" onclick="editCurrentTask()" style="flex: 1;">編集</button>
+            <button class="btn btn-secondary" onclick="hideModal('detailModal')" style="flex: 1;">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル：カレンダー -->
+<div id="calendarModal" class="modal">
+    <div class="modal-content">
+        <h3>📅 月間カレンダー</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn btn-secondary btn-small" onclick="changeMonth(-1)">← 前月</button>
+            <span id="currentMonth" style="flex: 1; text-align: center; font-size: 18px; color: #fff;"></span>
+            <button class="btn btn-secondary btn-small" onclick="changeMonth(1)">次月 →</button>
+        </div>
+        <div id="calendarContent"></div>
+        <button class="btn btn-secondary" onclick="hideModal('calendarModal')" style="width: 100%; margin-top: 15px;">閉じる</button>
+    </div>
+</div>
+
+<!-- モーダル：メモ -->
+<div id="memoModal" class="modal">
+    <div class="modal-content">
+        <h3>メモ追加</h3>
+        <input type="text" id="memoTitle" placeholder="タイトル">
+        <textarea id="memoContent" placeholder="内容" rows="10"></textarea>
+        <select id="memoGenre">
+            <option value="">ジャンル選択</option>
+        </select>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="saveMemo()" style="flex: 1;">保存</button>
+            <button class="btn btn-secondary" onclick="hideModal('memoModal')" style="flex: 1;">キャンセル</button>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル：データ状態確認 -->
+<div id="statusModal" class="modal">
+    <div class="modal-content">
+        <h3>📊 データ保存状態</h3>
+        <div id="statusContent"></div>
+        <button class="btn btn-secondary" onclick="hideModal('statusModal')" style="width: 100%; margin-top: 15px;">閉じる</button>
+    </div>
+</div>
+<script>
+// ===== グローバル変数 =====
+let appData = {
+    tasks: {},
+    genres: [],
+    selectedGenre: '全体',
+    pomodoroTime: 25 * 60,
+    pomodoroActive: false,
+    pomodoroPaused: false,
+    motivationLevel: 75,
+    dailyProgress: {},
+    memos: [],
+    weeklyGoal: '',
+    habitData: {},
+    currentTaskId: null,
+    currentEditGenre: null,
+    currentEditTaskId: null,
+    currentDetailTask: null,
+    lastSaveTime: null,
+    currentCalendarMonth: new Date()
+};
+
+let pomodoroInterval;
+let autoSaveInterval;
+const STORAGE_KEY = 'dreamNovelDashboard_v3';
+
+// 日本の祝日（2024-2025年の主要な祝日）
+const HOLIDAYS = {
+    '2024-01-01': '元日',
+    '2024-01-08': '成人の日',
+    '2024-02-11': '建国記念の日',
+    '2024-02-12': '振替休日',
+    '2024-02-23': '天皇誕生日',
+    '2024-03-20': '春分の日',
+    '2024-04-29': '昭和の日',
+    '2024-05-03': '憲法記念日',
+    '2024-05-04': 'みどりの日',
+    '2024-05-05': 'こどもの日',
+    '2024-05-06': '振替休日',
+    '2024-07-15': '海の日',
+    '2024-08-11': '山の日',
+    '2024-08-12': '振替休日',
+    '2024-09-16': '敬老の日',
+    '2024-09-22': '秋分の日',
+    '2024-09-23': '振替休日',
+    '2024-10-14': 'スポーツの日',
+    '2024-11-03': '文化の日',
+    '2024-11-04': '振替休日',
+    '2024-11-23': '勤労感謝の日',
+    '2025-01-01': '元日',
+    '2025-01-13': '成人の日',
+    '2025-02-11': '建国記念の日',
+    '2025-02-23': '天皇誕生日',
+    '2025-02-24': '振替休日',
+    '2025-03-20': '春分の日',
+    '2025-04-29': '昭和の日',
+    '2025-05-03': '憲法記念日',
+    '2025-05-04': 'みどりの日',
+    '2025-05-05': 'こどもの日',
+    '2025-05-06': '振替休日',
+    '2025-07-21': '海の日',
+    '2025-08-11': '山の日',
+    '2025-09-15': '敬老の日',
+    '2025-09-23': '秋分の日',
+    '2025-10-13': 'スポーツの日',
+    '2025-11-03': '文化の日',
+    '2025-11-23': '勤労感謝の日',
+    '2025-11-24': '振替休日'
+};
+
+// ===== 初期化 =====
+function init() {
+    loadData();
+    
+    // 初回起動時のデータ生成
+    if (appData.genres.length === 0) {
+        appData.genres = ['TRICK', 'KILLERS'];
+        generateInitialTasks();
+    }
+    
+    renderGenreTabs();
+    renderTasks();
+    updateStats();
+    updateAIAdvice();
+    updateProgressSection();
+    updateTodayProgress();
+    renderMemos();
+    renderHabitTracker();
+    generateAnalysisReport();
+    
+    // 週間目標の読み込み
+    if (appData.weeklyGoal) {
+        document.getElementById('weeklyGoal').value = appData.weeklyGoal;
+        updateGoalStatus();
+    }
+    
+    // 自動保存設定（10秒ごと）
+    autoSaveInterval = setInterval(() => {
+        saveData();
+        updateSyncIndicator();
+    }, 10000);
+    
+    // ページ離脱時の保存
+    window.addEventListener('beforeunload', (e) => {
+        saveData();
+    });
+    
+    // 初回の同期インジケーター更新
+    updateSyncIndicator();
+}
+
+// ===== データ永続化（改善版） =====
+function saveData() {
+    try {
+        appData.lastSaveTime = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        console.log('データ保存完了:', new Date().toLocaleTimeString());
+        return true;
+    } catch (e) {
+        console.error('保存エラー:', e);
+        showNotification('保存エラーが発生しました', 'error');
+        return false;
+    }
+}
+
+function loadData() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // 既存のappDataに上書き（構造を保持）
+            Object.assign(appData, parsed);
+            console.log('データ読み込み完了');
+            showNotification('データを読み込みました', 'success');
+        }
+    } catch (e) {
+        console.error('読み込みエラー:', e);
+        showNotification('データ読み込みエラー', 'error');
+    }
+}
+
+// 週間目標の保存（改善版）
+function saveWeeklyGoal() {
+    const goalInput = document.getElementById('weeklyGoal');
+    appData.weeklyGoal = goalInput.value;
+    saveData();
+    updateGoalStatus();
+    showNotification('週間目標を保存しました', 'success');
+}
+
+function updateGoalStatus() {
+    const statusDiv = document.getElementById('goalStatus');
+    if (appData.weeklyGoal) {
+        // 今週の完了タスク数を計算
+        const thisWeekCompleted = getThisWeekCompletedTasks();
+        statusDiv.innerHTML = `📊 今週の進捗: ${thisWeekCompleted}タスク完了`;
+    } else {
+        statusDiv.innerHTML = '';
+    }
+}
+
+function getThisWeekCompletedTasks() {
+    let count = 0;
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+    
+    Object.values(appData.tasks).forEach(genreTasks => {
+        genreTasks.forEach(task => {
+            if (task.completed && task.completedDate) {
+                const completedDate = new Date(task.completedDate);
+                if (completedDate >= weekStart) {
+                    count++;
+                }
+            }
+        });
+    });
+    
+    return count;
+}
+
+// エクスポート/インポート（改善版）
+function exportData() {
+    const dataStr = JSON.stringify(appData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const fileName = `dream-novel-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification(`データをエクスポートしました: ${fileName}`, 'success');
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            
+            // データ検証
+            if (!imported.tasks || !imported.genres) {
+                throw new Error('無効なデータ形式です');
+            }
+            
+            // 確認ダイアログ
+            const taskCount = Object.values(imported.tasks).flat().length;
+            const memoCount = imported.memos ? imported.memos.length : 0;
+            
+            if (confirm(`以下のデータをインポートします：\n- ジャンル: ${imported.genres.length}個\n- タスク: ${taskCount}個\n- メモ: ${memoCount}個\n\n現在のデータは上書きされます。続行しますか？`)) {
+                appData = imported;
+                saveData();
+                location.reload();
+            }
+        } catch (error) {
+            showNotification('インポートに失敗しました: ' + error.message, 'error');
+        }
+    };
+    reader.readAsText(file);
+    
+    // ファイル選択をリセット
+    event.target.value = '';
+}
+
+// データ状態確認（新機能）
+function showDataStatus() {
+    const modal = document.getElementById('statusModal');
+    const content = document.getElementById('statusContent');
+    
+    const taskCount = Object.values(appData.tasks).flat().length;
+    const completedCount = Object.values(appData.tasks).flat().filter(t => t.completed).length;
+    const memoCount = appData.memos.length;
+    const lastSave = appData.lastSaveTime ? new Date(appData.lastSaveTime).toLocaleString('ja-JP') : '未保存';
+    
+    content.innerHTML = `
+        <div style="color: #fff;">
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                <strong>📁 データサイズ:</strong> ${(JSON.stringify(appData).length / 1024).toFixed(2)} KB
+            </div>
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                <strong>⏰ 最終保存:</strong> ${lastSave}
+            </div>
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                <strong>📂 ジャンル数:</strong> ${appData.genres.length}
+            </div>
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                <strong>📋 タスク:</strong> ${completedCount} / ${taskCount} 完了
+            </div>
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                <strong>📝 メモ数:</strong> ${memoCount}
+            </div>
+            <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                <strong>🍅 総ポモドーロ:</strong> ${Object.values(appData.dailyProgress).reduce((a, b) => a + b, 0)}
+            </div>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn btn-danger btn-small" onclick="clearAllData()" style="flex: 1;">
+                🗑️ 全データ削除
+            </button>
+            <button class="btn btn-primary btn-small" onclick="saveData(); showNotification('手動保存しました', 'success');" style="flex: 1;">
+                💾 今すぐ保存
+            </button>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function clearAllData() {
+    if (confirm('⚠️ 警告：すべてのデータが削除されます。\n\nこの操作は取り消せません。本当に削除しますか？')) {
+        if (confirm('最終確認：本当にすべてのデータを削除してもよろしいですか？')) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    }
+}
+
+function updateSyncIndicator() {
+    const indicator = document.getElementById('syncIndicator');
+    const text = document.getElementById('syncText');
+    
+    if (appData.lastSaveTime) {
+        const lastSave = new Date(appData.lastSaveTime);
+        const now = new Date();
+        const diffSeconds = Math.floor((now - lastSave) / 1000);
+        
+        if (diffSeconds < 10) {
+            text.textContent = '✓ 保存済み';
+            indicator.className = 'sync-indicator';
+        } else if (diffSeconds < 60) {
+            text.textContent = `✓ ${diffSeconds}秒前に保存`;
+            indicator.className = 'sync-indicator';
+        } else {
+            const diffMinutes = Math.floor(diffSeconds / 60);
+            text.textContent = `⚠️ ${diffMinutes}分前に保存`;
+            indicator.className = 'sync-indicator error';
+        }
+    } else {
+        text.textContent = '⚠️ 未保存';
+        indicator.className = 'sync-indicator error';
+    }
+}
+
+// 通知システム
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.5s ease';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+
+// ユーティリティ関数
+function hideModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function findTask(taskId) {
+    for (const genre in appData.tasks) {
+        const task = appData.tasks[genre].find(t => t.id === taskId);
+        if (task) return task;
+    }
+    return null;
+}
+
+// ページ読み込み時に初期化
+window.addEventListener('DOMContentLoaded', init);
+</script>
+
 
