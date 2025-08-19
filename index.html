@@ -969,7 +969,31 @@ completePomodoro = function() {
     autoSave();
 };
 
-// 初期化関数を修正
+// ジャンルタブを再構築
+function rebuildGenreTabs() {
+    const tabsContainer = document.querySelector('.genre-tabs');
+    
+    // 既存のタブをクリア（ボタン以外）
+    const existingTabs = tabsContainer.querySelectorAll('.genre-tab');
+    existingTabs.forEach(tab => tab.remove());
+    
+    // 全体タブを追加
+    const allTab = document.createElement('div');
+    allTab.className = selectedGenre === '全体' ? 'genre-tab active' : 'genre-tab';
+    allTab.textContent = '全体';
+    allTab.onclick = () => selectGenre('全体');
+    tabsContainer.insertBefore(allTab, tabsContainer.firstChild);
+    
+    // 各ジャンルのタブを追加
+    genres.forEach(genre => {
+        const tab = document.createElement('div');
+        tab.className = selectedGenre === genre ? 'genre-tab active' : 'genre-tab';
+        tab.textContent = genre;
+        tab.onclick = () => selectGenre(genre);
+        tabsContainer.insertBefore(tab, tabsContainer.lastElementChild);
+    });
+}
+    // 初期化関数を修正
 async function init() {
 // 初期化
 function init() {
