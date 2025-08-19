@@ -543,12 +543,6 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
             分析中...
         </div>
     </div> 
-    html += '</div>';
-    document.getElementById('weeklySchedule').innerHTML = html;
-}
-
-// init()関数の最後に追加
-showWeeklyView();
     
     <!-- タスクリスト -->
     <div id="taskList"></div>
@@ -681,7 +675,6 @@ showWeeklyView();
 <!-- ここから JavaScript を追加 -->
 <script>
 // パート3のJavaScriptコードをここに配置
-</script>
 <script>
 // ===== グローバル変数定義 =====
 let tasks = {};
@@ -848,11 +841,6 @@ function uploadBackup() {
 
 // ===== 初期化関数 =====
 function init() {
-    loadTheme(); // この行を追加
-    const hasData = loadAllData();
-    // ... 既存のコード
-}
-function init() {
     const hasData = loadAllData();
     
     if (!hasData || Object.keys(tasks).length === 0) {
@@ -870,17 +858,289 @@ function init() {
     updateMotivation();
     updateTodayProgress();
 }
-    function init() {
-    // ... 既存のコード
+
+// 初期タスク生成
+function generateInitialTasks() {
+    genres.forEach(genre => {
+        tasks[genre] = generateTasksForGenre(genre);
+    });
+}
+
+// ジャンル用タスク生成
+function generateTasksForGenre(genre) {
+    const today = new Date();
+    const taskTemplates = [
+        {
+            title: `${genre} セリフ起こし`,
+            type: 'transcript',
+            duration: 2,
+            estimatedPomodoros: 8,
+            priority: 'high',
+            details: 'MakeMKV(1時間) → HandBrake(1時間) → Notta(1-2時間)',
+            subTasks: [
+                { name: 'MakeMKV処理', completed: false },
+                { name: 'HandBrake変換', completed: false },
+                { name: 'Notta文字起こし', completed: false }
+            ]
+        },
+        {
+            title: `${genre} キャラクター分析`,
+            type: 'analysis',
+            duration: 2,
+            estimatedPomodoros: 4,
+            priority: 'medium',
+            details: 'セリフから性格特性を抽出・分析',
+            subTasks: [
+                { name: '主要キャラの性格分析', completed: false },
+                { name: '関係性の整理', completed: false }
+            ]
+        },
+        {
+            title: `${genre} 展開・世界観分析`,
+            type: 'analysis',
+            duration: 2,
+            estimatedPomodoros: 4,
+            priority: 'medium',
+            details: 'ストーリー構造と世界観の把握',
+            subTasks: [
+                { name: 'プロット分析', completed: false },
+                { name: '世界観設定の整理', completed: false }
+            ]
+        },
+        {
+            title: `${genre} 伏線展開ファイル`,
+            type: 'planning',
+            duration: 3,
+            estimatedPomodoros: 6,
+            priority: 'high',
+            details: '3-5章構成の作成',
+            subTasks: [
+                { name: '章構成の決定', completed: false },
+                { name: '伏線の配置', completed: false },
+                { name: 'クライマックスの設計', completed: false }
+            ]
+        },
+        {
+            title: `${genre} 夢小説執筆`,
+            type: 'writing',
+            duration: 10,
+            estimatedPomodoros: 20,
+            priority: 'high',
+            details: '各章3-5話、1話8000字目安（合計72,000字）',
+            subTasks: [
+                { name: '第1章執筆', completed: false },
+                { name: '第2章執筆', completed: false },
+                { name: '第3章執筆', completed: false }
+            ]
+        }
+    ];
+    
+    let currentDate = new Date(today);
+    return taskTemplates.map((template, index) => {
+        const task = {
+            id: `${genre}-${Date.now()}-${index}`,
+            genre: genre,
+            ...template,
+            startDate: currentDate.toISOString().split('T')[0],
+            endDate: new Date(currentDate.getTime() + (template.duration - 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            progress: 0,
+            pomodoroSessions: 0,
+            completed: false
+        };
+        currentDate = new Date(currentDate.getTime() + template.duration * 24 * 60 * 60 * 1000);
+        return task;
+    });
+}
+
+// ===== グローバル変数定義 =====
+let tasks = {};
+let genres = ['TRICK', 'KILLERS'];
+let selectedGenre = '全体';
+let pomodoroActive = false;
+let pomodoroTime = 25 * 60;
+let motivationLevel = 75;
+let pomodoroInterval;
+let currentTaskId = null;
+let currentEditGenre = null;
+let currentDetailTask = null;
+let dailyProgress = {};
+
+const STORAGE_KEY = 'dreamNovelData';
+
+// 励ましの言葉
+const quotes = [
+    "一歩ずつ進めば、必ず目標に到達できます！",
+    "今日の小さな努力が、明日の大きな成果になります。",
+    "創作は魂の表現。あなたの物語を世界が待っています。",
+    "完璧じゃなくていい。まず始めることが大切です。",
+    "あなたの想像力は無限大。今日も素敵な物語を紡ぎましょう。",
+    "休憩も創作の一部。リフレッシュして、また頑張りましょう！",
+    "どんな偉大な作家も、一文字から始めました。",
+    "今書いているその一行が、誰かの心を動かすかもしれません。",
+    "疲れたときは、なぜ始めたのか思い出してください。",
+    "あなたにしか書けない物語があります。自信を持って！"
+];
+
+// ===== データ永続化関数 =====
+function saveAllData() {
+    const dataToSave = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        selectedGenre: selectedGenre,
+        motivationLevel: motivationLevel,
+        lastSaved: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    console.log('データ保存完了:', new Date().toLocaleTimeString());
+}
+
+function loadAllData() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            tasks = data.tasks || {};
+            genres = data.genres || ['TRICK', 'KILLERS'];
+            dailyProgress = data.dailyProgress || {};
+            selectedGenre = data.selectedGenre || '全体';
+            motivationLevel = data.motivationLevel || 75;
+            
+            validateData();
+            console.log('データ読み込み完了:', data.lastSaved);
+            return true;
+        } catch (e) {
+            console.error('データ読み込みエラー:', e);
+            return false;
+        }
+    }
+    return false;
+}
+
+function validateData() {
+    // tasksに存在するジャンルがgenresにも存在することを確認
+    Object.keys(tasks).forEach(genre => {
+        if (!genres.includes(genre)) {
+            console.log(`ジャンル「${genre}」を復元`);
+            genres.push(genre);
+        }
+    });
+    
+    // 空のジャンル（タスクがない）でも保持
+    genres.forEach(genre => {
+        if (!tasks[genre]) {
+            tasks[genre] = [];
+        }
+    });
+}
+
+function rebuildGenreTabs() {
+    const tabsContainer = document.querySelector('.genre-tabs');
+    if (!tabsContainer) return;
+    
+    // 既存のタブをクリア（ボタン以外）
+    const existingTabs = tabsContainer.querySelectorAll('.genre-tab');
+    existingTabs.forEach(tab => tab.remove());
+    
+    // 全体タブを追加
+    const allTab = document.createElement('div');
+    allTab.className = selectedGenre === '全体' ? 'genre-tab active' : 'genre-tab';
+    allTab.textContent = '全体';
+    allTab.onclick = () => selectGenre('全体');
+    tabsContainer.insertBefore(allTab, tabsContainer.firstChild);
+    
+    // 各ジャンルのタブを追加
+    genres.forEach(genre => {
+        const tab = document.createElement('div');
+        tab.className = selectedGenre === genre ? 'genre-tab active' : 'genre-tab';
+        tab.textContent = genre;
+        tab.onclick = () => selectGenre(genre);
+        tabsContainer.insertBefore(tab, tabsContainer.lastElementChild);
+    });
+}
+
+let saveTimeout;
+function autoSave() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        saveAllData();
+    }, 500);
+}
+
+// バックアップ関数
+function downloadBackup() {
+    const data = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dream-novel-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('バックアップファイルをダウンロードしました');
+}
+
+function uploadBackup() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                tasks = data.tasks || {};
+                genres = data.genres || ['TRICK', 'KILLERS'];
+                dailyProgress = data.dailyProgress || {};
+                saveAllData();
+                rebuildGenreTabs();
+                renderTasks();
+                updateStats();
+                updateProgressSection();
+                alert('復元完了！');
+            } catch (e) {
+                alert('ファイル読み込みエラー');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// ===== 初期化関数 =====
+function init() {
+    loadTheme(); // テーマ読み込み
+    const hasData = loadAllData();
+    
+    if (!hasData || Object.keys(tasks).length === 0) {
+        const today = new Date().toISOString().split('T')[0];
+        dailyProgress[today] = 0;
+        generateInitialTasks();
+    }
+    
+    rebuildGenreTabs();
+    renderTasks();
+    updateStats();
+    updateAIAdvice();
+    checkOverdueTasks();
+    updateProgressSection();
+    updateMotivation();
     updateTodayProgress();
     
     // 新機能の初期化
     showWeeklyView();
     checkAchievements();
     displayMemos();
-    initAnalysisDashboard(); // この行を追加
+    initAnalysisDashboard();
 }
-
 // 初期タスク生成
 function generateInitialTasks() {
     genres.forEach(genre => {
@@ -1494,7 +1754,33 @@ function hideModal(modalId) {
 }
 
 function addGenre() {
-    // ===== テーマカスタマイズ =====
+    const input = document.getElementById('genreInput');
+    const genreName = input.value.trim();
+    
+    if (genreName && !genres.includes(genreName)) {
+        genres.push(genreName);
+        tasks[genreName] = generateTasksForGenre(genreName);
+        
+        // タブ追加
+        const tabsContainer = document.querySelector('.genre-tabs');
+        const newTab = document.createElement('div');
+        newTab.className = 'genre-tab';
+        newTab.textContent = genreName;
+        newTab.onclick = () => selectGenre(genreName);
+        tabsContainer.insertBefore(newTab, tabsContainer.lastElementChild);
+        
+        renderTasks();
+        updateStats();
+        updateProgressSection();
+        motivationLevel = Math.min(100, motivationLevel + 10);
+        updateMotivation();
+    }
+    
+    input.value = '';
+    hideModal('genreModal');
+    autoSave();
+}
+// ===== テーマカスタマイズ =====
 const themes = {
     default: { primary: '#667eea', secondary: '#764ba2', name: 'デフォルト', emoji: '✨' },
     sunset: { primary: '#f093fb', secondary: '#f5576c', name: 'サンセット', emoji: '🌅' },
@@ -1531,6 +1817,29 @@ function showThemeModal() {
     document.getElementById('themeModal').style.display = 'flex';
 }
 
+function applyTheme(themeName) {
+    const theme = themes[themeName];
+    document.body.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
+    
+    // プログレスセクションの色も変更
+    const progressSection = document.querySelector('.progress-section');
+    if (progressSection) {
+        progressSection.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
+    }
+    
+    localStorage.setItem('selectedTheme', themeName);
+    hideModal('themeModal');
+}
+
+// ページ読み込み時にテーマを適用
+function loadTheme() {
+    const savedTheme = localStorage.getItem('selectedTheme');
+    if (savedTheme && themes[savedTheme]) {
+        applyTheme(savedTheme);
+    }
+}
+    
+    
 function applyTheme(themeName) {
     const theme = themes[themeName];
     document.body.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
@@ -1842,16 +2151,189 @@ function initAnalysisDashboard() {
         showWorkPatterns(content);
     }
 }
-// ここに showWeeklyView() 関数を貼り付け
+    // ===== 週間ビュー機能 =====
 function showWeeklyView() {
     const today = new Date();
-    // ... 関数の中身 ...
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    
+    let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px;">';
+    const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const isToday = date.toDateString() === today.toDateString();
+        
+        // その日のタスクを取得
+        const dayTasks = [];
+        Object.values(tasks).forEach(genreTasks => {
+            genreTasks.forEach(task => {
+                if (!task.completed && 
+                    new Date(task.startDate) <= date && 
+                    new Date(task.endDate) >= date) {
+                    dayTasks.push(task);
+                }
+            });
+        });
+        
+        html += `
+            <div style="background: white; border-radius: 8px; padding: 8px; ${isToday ? 'border: 2px solid #667eea;' : ''}">
+                <div style="font-weight: bold; text-align: center; color: ${i === 0 ? '#ff6b6b' : i === 6 ? '#4169e1' : '#333'};">
+                    ${weekDays[i]}
+                </div>
+                <div style="font-size: 12px; text-align: center; margin: 5px 0;">
+                    ${date.getMonth() + 1}/${date.getDate()}
+                </div>
+                <div style="font-size: 10px; color: #666;">
+                    ${dayTasks.map(t => `• ${t.title.substring(0, 8)}...`).join('<br>')}
+                </div>
+                ${dayTasks.length > 0 ? `<div style="text-align: center; font-size: 12px; color: #667eea; margin-top: 5px;">${dayTasks.length}件</div>` : ''}
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    document.getElementById('weeklySchedule').innerHTML = html;
 }
 
-// ===== 初期化実行 =====
-window.addEventListener('DOMContentLoaded', () => {
-    init();
-});
+// ===== メモ機能 =====
+function saveMemo() {
+    const memo = document.getElementById('quickMemo').value;
+    if (!memo.trim()) return;
+    
+    const memos = JSON.parse(localStorage.getItem('memos') || '[]');
+    memos.unshift({
+        id: Date.now(),
+        text: memo,
+        date: new Date().toISOString(),
+        genre: selectedGenre
+    });
+    
+    // 最新10件のみ保持
+    if (memos.length > 10) memos.pop();
+    
+    localStorage.setItem('memos', JSON.stringify(memos));
+    document.getElementById('quickMemo').value = '';
+    displayMemos();
+}
+
+function displayMemos() {
+    const memos = JSON.parse(localStorage.getItem('memos') || '[]');
+    const container = document.getElementById('savedMemos');
+    if (!container) return;
+    
+    container.innerHTML = memos.map(memo => `
+        <div style="background: #f5f5f5; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #667eea; font-weight: bold;">${memo.genre}</span>
+                <span style="color: #999;">${new Date(memo.date).toLocaleDateString('ja-JP')}</span>
+            </div>
+            <div style="margin-top: 5px;">${memo.text}</div>
+            <button onclick="deleteMemo(${memo.id})" style="margin-top: 5px; font-size: 10px; padding: 2px 5px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer;">削除</button>
+        </div>
+    `).join('');
+}
+
+function deleteMemo(id) {
+    let memos = JSON.parse(localStorage.getItem('memos') || '[]');
+    memos = memos.filter(m => m.id !== id);
+    localStorage.setItem('memos', JSON.stringify(memos));
+    displayMemos();
+}
+
+// ===== 実績バッジ機能 =====
+const achievements = {
+    firstTask: { icon: '🎯', name: '初めての一歩', condition: 'タスクを1つ完了' },
+    fivePomodoros: { icon: '🍅', name: 'トマト農家', condition: '5ポモドーロ達成' },
+    tenPomodoros: { icon: '🌟', name: 'ポモドーロマスター', condition: '10ポモドーロ達成' },
+    weekStreak: { icon: '🔥', name: '継続の鬼', condition: '7日連続作業' },
+    genreMaster: { icon: '👑', name: 'ジャンル制覇', condition: '1ジャンル全タスク完了' },
+    earlyBird: { icon: '🌅', name: '早起き作家', condition: '朝6時前に作業開始' },
+    nightOwl: { icon: '🦉', name: '夜型作家', condition: '深夜0時以降に作業' },
+    speedWriter: { icon: '⚡', name: 'スピードライター', condition: '1日で10000字執筆' }
+};
+
+function checkAchievements() {
+    const earned = JSON.parse(localStorage.getItem('achievements') || '[]');
+    let completedTasks = 0;
+    let totalPomodoros = 0;
+    
+    Object.values(tasks).forEach(genreTasks => {
+        genreTasks.forEach(task => {
+            if (task.completed) completedTasks++;
+            totalPomodoros += task.pomodoroSessions;
+        });
+    });
+    
+    // 実績チェック
+    if (completedTasks >= 1 && !earned.includes('firstTask')) {
+        earned.push('firstTask');
+        showAchievementNotification(achievements.firstTask);
+    }
+    
+    if (totalPomodoros >= 5 && !earned.includes('fivePomodoros')) {
+        earned.push('fivePomodoros');
+        showAchievementNotification(achievements.fivePomodoros);
+    }
+    
+    if (totalPomodoros >= 10 && !earned.includes('tenPomodoros')) {
+        earned.push('tenPomodoros');
+        showAchievementNotification(achievements.tenPomodoros);
+    }
+    
+    localStorage.setItem('achievements', JSON.stringify(earned));
+    displayAchievements(earned);
+}
+
+function displayAchievements(earned) {
+    const container = document.getElementById('achievementBadges');
+    if (!container) return;
+    
+    container.innerHTML = earned.map(key => {
+        const achievement = achievements[key];
+        if (!achievement) return '';
+        return `
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; min-width: 80px;">
+                <div style="font-size: 24px;">${achievement.icon}</div>
+                <div style="font-size: 10px; margin-top: 5px;">${achievement.name}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function showAchievementNotification(achievement) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 10000;
+        animation: slideIn 0.5s ease;
+    `;
+    notification.innerHTML = `
+        <div style="font-size: 18px; margin-bottom: 5px;">🎉 実績解除！</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">${achievement.icon}</span>
+            <div>
+                <div style="font-weight: bold;">${achievement.name}</div>
+                <div style="font-size: 12px;">${achievement.condition}</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.5s ease';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
     
 // ===== 初期化実行 =====
 window.addEventListener('DOMContentLoaded', () => {
