@@ -494,6 +494,46 @@ function autoSave() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js');
 }
+// デバッグ用：現在のデータを確認
+function checkCurrentData() {
+    console.log('=== 現在のデータ ===');
+    console.log('ジャンル:', genres);
+    console.log('タスク:', tasks);
+    console.log('選択中のジャンル:', selectedGenre);
+    console.log('保存済みデータ:', localStorage.getItem(STORAGE_KEY));
+    console.log('===================');
+}
+
+// デバッグ用：データをクリア（注意！全データが消えます）
+function clearAllData() {
+    if (confirm('本当にすべてのデータを削除しますか？この操作は取り消せません。')) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+// デバッグ用：ダミーデータを追加
+function addTestData() {
+    const testGenre = 'テスト' + Date.now();
+    genres.push(testGenre);
+    tasks[testGenre] = [{
+        id: `test-${Date.now()}`,
+        title: 'テストタスク',
+        type: 'writing',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0],
+        estimatedPomodoros: 4,
+        priority: 'high',
+        details: 'これはテストです',
+        progress: 50,
+        pomodoroSessions: 2,
+        completed: false
+    }];
+    saveAllData();
+    rebuildGenreTabs();
+    renderTasks();
+    console.log('テストデータを追加しました');
+}
 </script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -933,33 +973,47 @@ completePomodoro = function() {
 async function init() {
 // 初期化
 function init() {
-    // 保存データを読み込み
-    const hasData = loadAllData();
-    
-    // データがない場合のみ初期データを生成
-    if (!hasData || Object.keys(tasks).length === 0) {
-        const today = new Date().toISOString().split('T')[0];
-        dailyProgress[today] = 0;
-        generateInitialTasks();
-    }
-    
-    // ジャンルタブを再構築（重要！）
-    rebuildGenreTabs();
-    
-    // 存在しないジャンルのタスクがあれば、genresに追加
+    // データの整合性をチェック
+function validateData() {
+    // tasksに存在するジャンルがgenresにも存在することを確認
     Object.keys(tasks).forEach(genre => {
-        if (!genres.includes(genre) && genre !== '全体') {
+        if (!genres.includes(genre)) {
+            console.log(`ジャンル「${genre}」を復元`);
             genres.push(genre);
         }
     });
     
-    renderTasks();
-    updateStats();
-    updateAIAdvice();
-    checkOverdueTasks();
-    updateProgressSection();
-    updateMotivation();
-    updateTodayProgress();
+    // 空のジャンル（タスクがない）でも保持
+    genres.forEach(genre => {
+        if (!tasks[genre]) {
+            tasks[genre] = [];
+        }
+    });
+}
+    // 保存データを読み込み
+    const hasData = loadAllData();// データを読み込み
+function loadAllData() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            tasks = data.tasks || {};
+            genres = data.genres || ['TRICK', 'KILLERS'];
+            dailyProgress = data.dailyProgress || {};
+            selectedGenre = data.selectedGenre || '全体';
+            motivationLevel = data.motivationLevel || 75;
+            
+            // データ整合性チェック（この行を追加！）
+            validateData();
+            
+            console.log('データ読み込み完了:', data.lastSaved);
+            return true;
+        } catch (e) {
+            console.error('データ読み込みエラー:', e);
+            return false;
+        }
+    }
+    return false;
 }
 
 // ページ離脱時の保存
