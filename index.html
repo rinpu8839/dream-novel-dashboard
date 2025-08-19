@@ -448,7 +448,16 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js');
 }
 </script>
-
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="夢小説">
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js');
+}
+</script>
+  
 </head>
 <body>
 <div class="container">
@@ -618,6 +627,267 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <script>
+  // ===== IndexedDB設定 =====
+let db;
+const DB_NAME = 'DreamNovelDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'userData';
+
+// IndexedDB初期化
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onerror = () => {
+            console.error('IndexedDB開けませんでした');
+            reject(request.error);
+        };
+        
+        request.onsuccess = () => {
+            db = request.result;
+            console.log('IndexedDB接続成功');
+            resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            
+            // オブジェクトストアが存在しない場合は作成
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+                console.log('オブジェクトストア作成完了');
+            }
+        };
+    });
+}
+
+// データ保存（自動保存）
+async function saveToIndexedDB() {
+    if (!db) {
+        await initDB();
+    }
+    
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        
+        const data = {
+            id: 'mainData',
+            tasks: tasks,
+            genres: genres,
+            dailyProgress: dailyProgress,
+            selectedGenre: selectedGenre,
+            motivationLevel: motivationLevel,
+            timestamp: new Date().toISOString(),
+            lastModified: Date.now()
+        };
+        
+        const request = store.put(data);
+        
+        request.onsuccess = () => {
+            console.log('データ保存成功:', new Date().toLocaleTimeString());
+            resolve();
+        };
+        
+        request.onerror = () => {
+            console.error('データ保存失敗');
+            reject(request.error);
+        };
+    });
+}
+
+// データ読み込み
+async function loadFromIndexedDB() {
+    if (!db) {
+        await initDB();
+    }
+    
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get('mainData');
+        
+        request.onsuccess = () => {
+            if (request.result) {
+                const data = request.result;
+                tasks = data.tasks || {};
+                genres = data.genres || ['TRICK', 'KILLERS'];
+                dailyProgress = data.dailyProgress || {};
+                selectedGenre = data.selectedGenre || '全体';
+                motivationLevel = data.motivationLevel || 75;
+                
+                console.log('データ読み込み成功:', data.timestamp);
+                resolve(data);
+            } else {
+                console.log('保存データなし - 初期データを使用');
+                resolve(null);
+            }
+        };
+        
+        request.onerror = () => {
+            console.error('データ読み込み失敗');
+            reject(request.error);
+        };
+    });
+}
+
+// バックアップデータのエクスポート
+function exportBackup() {
+    const data = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        selectedGenre: selectedGenre,
+        motivationLevel: motivationLevel,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dream-novel-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert('バックアップファイルをダウンロードしました');
+}
+
+// バックアップデータのインポート
+function importBackup() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                
+                // データを復元
+                tasks = data.tasks || {};
+                genres = data.genres || ['TRICK', 'KILLERS'];
+                dailyProgress = data.dailyProgress || {};
+                selectedGenre = data.selectedGenre || '全体';
+                motivationLevel = data.motivationLevel || 75;
+                
+                // IndexedDBに保存
+                await saveToIndexedDB();
+                
+                // UIを更新
+                renderTasks();
+                updateStats();
+                updateMotivation();
+                updateProgressSection();
+                
+                alert('データのインポートが完了しました！');
+            } catch (error) {
+                console.error('インポート失敗:', error);
+                alert('ファイルの読み込みに失敗しました');
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+// 自動保存（変更があった場合）
+let saveTimeout;
+function autoSave() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        saveToIndexedDB().catch(console.error);
+    }, 1000); // 1秒後に保存
+}
+
+// 既存の関数を修正 - データ変更時に自動保存を呼び出す
+const originalToggleTask = toggleTask;
+toggleTask = function(taskId) {
+    originalToggleTask(taskId);
+    autoSave();
+};
+
+const originalSaveTask = saveTask;
+saveTask = function() {
+    originalSaveTask();
+    autoSave();
+};
+
+const originalDeleteTask = deleteTask;
+deleteTask = function(taskId) {
+    originalDeleteTask(taskId);
+    autoSave();
+};
+
+const originalCompletePomodoro = completePomodoro;
+completePomodoro = function() {
+    originalCompletePomodoro();
+    autoSave();
+};
+
+// 初期化関数を修正
+async function init() {
+    try {
+        // IndexedDBから読み込み
+        await loadFromIndexedDB();
+        
+        // データがない場合は初期データを生成
+        if (Object.keys(tasks).length === 0) {
+            generateInitialTasks();
+        }
+        
+        // UI更新
+        renderTasks();
+        updateStats();
+        updateAIAdvice();
+        checkOverdueTasks();
+        updateProgressSection();
+        updateMotivation();
+        updateTodayProgress();
+        
+    } catch (error) {
+        console.error('初期化エラー:', error);
+        // フォールバック: localStorage使用
+        const saved = localStorage.getItem('dreamNovelData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            tasks = data.tasks || {};
+            genres = data.genres || ['TRICK', 'KILLERS'];
+            dailyProgress = data.dailyProgress || {};
+        } else {
+            generateInitialTasks();
+        }
+        renderTasks();
+        updateStats();
+    }
+}
+
+// ページ離脱時の保存
+window.addEventListener('beforeunload', () => {
+    // 同期的に保存（非推奨だが確実）
+    const data = {
+        tasks: tasks,
+        genres: genres,
+        dailyProgress: dailyProgress,
+        selectedGenre: selectedGenre,
+        motivationLevel: motivationLevel
+    };
+    localStorage.setItem('dreamNovelData', JSON.stringify(data));
+});
+
+// 定期的な自動保存（5分ごと）
+setInterval(() => {
+    saveToIndexedDB().catch(console.error);
+}, 5 * 60 * 1000);
+  
 // データ管理
 let tasks = {};
 let genres = ['TRICK', 'KILLERS'];
