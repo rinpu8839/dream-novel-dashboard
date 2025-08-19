@@ -5,12 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>夢小説創作ダッシュボード</title>
 
-<!-- PWA対応 -->
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="夢小説">
-
 <style>
 * {
     margin: 0;
@@ -452,19 +446,18 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
             <span>夢小説創作ダッシュボード</span>
         </div>
         
-<!-- バックアップボタン -->
-<div style="margin-top: 10px;">
-    <button class="btn btn-warning btn-small" onclick="downloadBackup()">
-        💾 バックアップ
-    </button>
-    <button class="btn btn-success btn-small" onclick="uploadBackup()">
-        📂 復元
-    </button>
-    <!-- テーマボタンを追加 -->
-    <button class="btn btn-small" onclick="showThemeModal()" style="background: #9f7aea; color: white;">
-        🎨 テーマ
-    </button>
-</div>
+        <!-- バックアップボタン -->
+        <div style="margin-top: 10px;">
+            <button class="btn btn-warning btn-small" onclick="downloadBackup()">
+                💾 バックアップ
+            </button>
+            <button class="btn btn-success btn-small" onclick="uploadBackup()">
+                📂 復元
+            </button>
+            <button class="btn btn-small" onclick="showThemeModal()" style="background: #9f7aea; color: white;">
+                🎨 テーマ
+            </button>
+        </div>
         
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
@@ -530,11 +523,12 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
             </button>
         </div>
     </div>
+    
     <!-- 週間ビュー -->
-<div class="weekly-view" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-    <h3>📅 今週の予定</h3>
-    <div id="weeklySchedule"></div>
-</div>
+    <div class="weekly-view" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+        <h3>📅 今週の予定</h3>
+        <div id="weeklySchedule"></div>
+    </div>
     
     <!-- AIアドバイス -->
     <div class="ai-advice">
@@ -542,18 +536,18 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
         <div id="aiAdvice">
             分析中...
         </div>
-    </div> 
+    </div>
     
     <!-- タスクリスト -->
     <div id="taskList"></div>
+    
     <!-- クイックメモ -->
-<div class="memo-section" style="background: white; border-radius: 10px; padding: 15px; margin-top: 20px;">
-    <h3 style="color: #333;">💡 アイデアメモ</h3>
-    <textarea id="quickMemo" style="width: 100%; min-height: 100px; margin-top: 10px;" 
-              placeholder="アイデアや気づきをメモ..." onchange="saveMemo()"></textarea>
-    <div id="savedMemos" style="margin-top: 10px;"></div>
-</div>
-                        
+    <div class="memo-section" style="background: white; border-radius: 10px; padding: 15px; margin-top: 20px;">
+        <h3 style="color: #333;">💡 アイデアメモ</h3>
+        <textarea id="quickMemo" style="width: 100%; min-height: 100px; margin-top: 10px;" 
+                  placeholder="アイデアや気づきをメモ..." onchange="saveMemo()"></textarea>
+        <div id="savedMemos" style="margin-top: 10px;"></div>
+    </div>
     
     <!-- 統計 -->
     <div class="stats-grid">
@@ -570,35 +564,34 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
             <div class="stat-label">執筆文字数</div>
         </div>
     </div>
-</div>
-<!-- 分析ダッシュボード -->
-<div class="analysis-dashboard" style="background: white; border-radius: 15px; padding: 20px; margin-top: 20px;">
-    <h3 style="color: #333; margin-bottom: 15px;">📊 詳細分析</h3>
     
-    <!-- タブナビゲーション -->
-    <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
-        <button class="analysis-tab active" onclick="showAnalysisTab('patterns')" style="padding: 8px 16px; border: none; background: #667eea; color: white; border-radius: 5px; cursor: pointer;">
-            📈 作業パターン
-        </button>
-        <button class="analysis-tab" onclick="showAnalysisTab('productivity')" style="padding: 8px 16px; border: none; background: #e0e0e0; color: #333; border-radius: 5px; cursor: pointer;">
-            ⏰ 生産性分析
-        </button>
-        <button class="analysis-tab" onclick="showAnalysisTab('comparison')" style="padding: 8px 16px; border: none; background: #e0e0e0; color: #333; border-radius: 5px; cursor: pointer;">
-            📊 ジャンル比較
-        </button>
+    <!-- 分析ダッシュボード -->
+    <div class="analysis-dashboard" style="background: white; border-radius: 15px; padding: 20px; margin-top: 20px;">
+        <h3 style="color: #333; margin-bottom: 15px;">📊 詳細分析</h3>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
+            <button class="analysis-tab active" onclick="showAnalysisTab('patterns')" style="padding: 8px 16px; border: none; background: #667eea; color: white; border-radius: 5px; cursor: pointer;">
+                📈 作業パターン
+            </button>
+            <button class="analysis-tab" onclick="showAnalysisTab('productivity')" style="padding: 8px 16px; border: none; background: #e0e0e0; color: #333; border-radius: 5px; cursor: pointer;">
+                ⏰ 生産性分析
+            </button>
+            <button class="analysis-tab" onclick="showAnalysisTab('comparison')" style="padding: 8px 16px; border: none; background: #e0e0e0; color: #333; border-radius: 5px; cursor: pointer;">
+                📊 ジャンル比較
+            </button>
+        </div>
+        
+        <div id="analysisContent"></div>
     </div>
     
-    <!-- タブコンテンツ -->
-    <div id="analysisContent">
-        <!-- 初期表示は作業パターン -->
+    <!-- 実績バッジ -->
+    <div class="achievement-section" style="background: white; border-radius: 10px; padding: 15px; margin-top: 20px;">
+        <h3 style="color: #333; margin-bottom: 10px;">🏆 獲得バッジ</h3>
+        <div id="achievementBadges" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
     </div>
 </div>
-                        <!-- 実績バッジ -->
-<div class="achievement-section" style="background: white; border-radius: 10px; padding: 15px; margin-top: 20px;">
-    <h3 style="color: #333; margin-bottom: 10px;">🏆 獲得バッジ</h3>
-    <div id="achievementBadges" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
-</div>
-                       
+
+<!-- モーダルウィンドウ群 -->
 
 <!-- ジャンル追加モーダル -->
 <div id="genreModal" class="modal">
@@ -663,6 +656,7 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
         </div>
     </div>
 </div>
+
 <!-- テーマ選択モーダル -->
 <div id="themeModal" class="modal">
     <div class="modal-content">
@@ -671,10 +665,7 @@ input[type="text"], input[type="date"], input[type="number"], select, textarea {
         <button class="btn" onclick="hideModal('themeModal')" style="width: 100%; margin-top: 15px; background: #ccc;">閉じる</button>
     </div>
 </div>
-                        
-<!-- ここから JavaScript を追加 -->
-<script>
-// パート3のJavaScriptコードをここに配置
+
 <script>
 // ===== グローバル変数定義 =====
 let tasks = {};
@@ -742,7 +733,6 @@ function loadAllData() {
 }
 
 function validateData() {
-    // tasksに存在するジャンルがgenresにも存在することを確認
     Object.keys(tasks).forEach(genre => {
         if (!genres.includes(genre)) {
             console.log(`ジャンル「${genre}」を復元`);
@@ -750,7 +740,6 @@ function validateData() {
         }
     });
     
-    // 空のジャンル（タスクがない）でも保持
     genres.forEach(genre => {
         if (!tasks[genre]) {
             tasks[genre] = [];
@@ -762,18 +751,15 @@ function rebuildGenreTabs() {
     const tabsContainer = document.querySelector('.genre-tabs');
     if (!tabsContainer) return;
     
-    // 既存のタブをクリア（ボタン以外）
     const existingTabs = tabsContainer.querySelectorAll('.genre-tab');
     existingTabs.forEach(tab => tab.remove());
     
-    // 全体タブを追加
     const allTab = document.createElement('div');
     allTab.className = selectedGenre === '全体' ? 'genre-tab active' : 'genre-tab';
     allTab.textContent = '全体';
     allTab.onclick = () => selectGenre('全体');
     tabsContainer.insertBefore(allTab, tabsContainer.firstChild);
     
-    // 各ジャンルのタブを追加
     genres.forEach(genre => {
         const tab = document.createElement('div');
         tab.className = selectedGenre === genre ? 'genre-tab active' : 'genre-tab';
@@ -841,283 +827,7 @@ function uploadBackup() {
 
 // ===== 初期化関数 =====
 function init() {
-    const hasData = loadAllData();
-    
-    if (!hasData || Object.keys(tasks).length === 0) {
-        const today = new Date().toISOString().split('T')[0];
-        dailyProgress[today] = 0;
-        generateInitialTasks();
-    }
-    
-    rebuildGenreTabs();
-    renderTasks();
-    updateStats();
-    updateAIAdvice();
-    checkOverdueTasks();
-    updateProgressSection();
-    updateMotivation();
-    updateTodayProgress();
-}
-
-// 初期タスク生成
-function generateInitialTasks() {
-    genres.forEach(genre => {
-        tasks[genre] = generateTasksForGenre(genre);
-    });
-}
-
-// ジャンル用タスク生成
-function generateTasksForGenre(genre) {
-    const today = new Date();
-    const taskTemplates = [
-        {
-            title: `${genre} セリフ起こし`,
-            type: 'transcript',
-            duration: 2,
-            estimatedPomodoros: 8,
-            priority: 'high',
-            details: 'MakeMKV(1時間) → HandBrake(1時間) → Notta(1-2時間)',
-            subTasks: [
-                { name: 'MakeMKV処理', completed: false },
-                { name: 'HandBrake変換', completed: false },
-                { name: 'Notta文字起こし', completed: false }
-            ]
-        },
-        {
-            title: `${genre} キャラクター分析`,
-            type: 'analysis',
-            duration: 2,
-            estimatedPomodoros: 4,
-            priority: 'medium',
-            details: 'セリフから性格特性を抽出・分析',
-            subTasks: [
-                { name: '主要キャラの性格分析', completed: false },
-                { name: '関係性の整理', completed: false }
-            ]
-        },
-        {
-            title: `${genre} 展開・世界観分析`,
-            type: 'analysis',
-            duration: 2,
-            estimatedPomodoros: 4,
-            priority: 'medium',
-            details: 'ストーリー構造と世界観の把握',
-            subTasks: [
-                { name: 'プロット分析', completed: false },
-                { name: '世界観設定の整理', completed: false }
-            ]
-        },
-        {
-            title: `${genre} 伏線展開ファイル`,
-            type: 'planning',
-            duration: 3,
-            estimatedPomodoros: 6,
-            priority: 'high',
-            details: '3-5章構成の作成',
-            subTasks: [
-                { name: '章構成の決定', completed: false },
-                { name: '伏線の配置', completed: false },
-                { name: 'クライマックスの設計', completed: false }
-            ]
-        },
-        {
-            title: `${genre} 夢小説執筆`,
-            type: 'writing',
-            duration: 10,
-            estimatedPomodoros: 20,
-            priority: 'high',
-            details: '各章3-5話、1話8000字目安（合計72,000字）',
-            subTasks: [
-                { name: '第1章執筆', completed: false },
-                { name: '第2章執筆', completed: false },
-                { name: '第3章執筆', completed: false }
-            ]
-        }
-    ];
-    
-    let currentDate = new Date(today);
-    return taskTemplates.map((template, index) => {
-        const task = {
-            id: `${genre}-${Date.now()}-${index}`,
-            genre: genre,
-            ...template,
-            startDate: currentDate.toISOString().split('T')[0],
-            endDate: new Date(currentDate.getTime() + (template.duration - 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            progress: 0,
-            pomodoroSessions: 0,
-            completed: false
-        };
-        currentDate = new Date(currentDate.getTime() + template.duration * 24 * 60 * 60 * 1000);
-        return task;
-    });
-}
-
-// ===== グローバル変数定義 =====
-let tasks = {};
-let genres = ['TRICK', 'KILLERS'];
-let selectedGenre = '全体';
-let pomodoroActive = false;
-let pomodoroTime = 25 * 60;
-let motivationLevel = 75;
-let pomodoroInterval;
-let currentTaskId = null;
-let currentEditGenre = null;
-let currentDetailTask = null;
-let dailyProgress = {};
-
-const STORAGE_KEY = 'dreamNovelData';
-
-// 励ましの言葉
-const quotes = [
-    "一歩ずつ進めば、必ず目標に到達できます！",
-    "今日の小さな努力が、明日の大きな成果になります。",
-    "創作は魂の表現。あなたの物語を世界が待っています。",
-    "完璧じゃなくていい。まず始めることが大切です。",
-    "あなたの想像力は無限大。今日も素敵な物語を紡ぎましょう。",
-    "休憩も創作の一部。リフレッシュして、また頑張りましょう！",
-    "どんな偉大な作家も、一文字から始めました。",
-    "今書いているその一行が、誰かの心を動かすかもしれません。",
-    "疲れたときは、なぜ始めたのか思い出してください。",
-    "あなたにしか書けない物語があります。自信を持って！"
-];
-
-// ===== データ永続化関数 =====
-function saveAllData() {
-    const dataToSave = {
-        tasks: tasks,
-        genres: genres,
-        dailyProgress: dailyProgress,
-        selectedGenre: selectedGenre,
-        motivationLevel: motivationLevel,
-        lastSaved: new Date().toISOString()
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    console.log('データ保存完了:', new Date().toLocaleTimeString());
-}
-
-function loadAllData() {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-        try {
-            const data = JSON.parse(savedData);
-            tasks = data.tasks || {};
-            genres = data.genres || ['TRICK', 'KILLERS'];
-            dailyProgress = data.dailyProgress || {};
-            selectedGenre = data.selectedGenre || '全体';
-            motivationLevel = data.motivationLevel || 75;
-            
-            validateData();
-            console.log('データ読み込み完了:', data.lastSaved);
-            return true;
-        } catch (e) {
-            console.error('データ読み込みエラー:', e);
-            return false;
-        }
-    }
-    return false;
-}
-
-function validateData() {
-    // tasksに存在するジャンルがgenresにも存在することを確認
-    Object.keys(tasks).forEach(genre => {
-        if (!genres.includes(genre)) {
-            console.log(`ジャンル「${genre}」を復元`);
-            genres.push(genre);
-        }
-    });
-    
-    // 空のジャンル（タスクがない）でも保持
-    genres.forEach(genre => {
-        if (!tasks[genre]) {
-            tasks[genre] = [];
-        }
-    });
-}
-
-function rebuildGenreTabs() {
-    const tabsContainer = document.querySelector('.genre-tabs');
-    if (!tabsContainer) return;
-    
-    // 既存のタブをクリア（ボタン以外）
-    const existingTabs = tabsContainer.querySelectorAll('.genre-tab');
-    existingTabs.forEach(tab => tab.remove());
-    
-    // 全体タブを追加
-    const allTab = document.createElement('div');
-    allTab.className = selectedGenre === '全体' ? 'genre-tab active' : 'genre-tab';
-    allTab.textContent = '全体';
-    allTab.onclick = () => selectGenre('全体');
-    tabsContainer.insertBefore(allTab, tabsContainer.firstChild);
-    
-    // 各ジャンルのタブを追加
-    genres.forEach(genre => {
-        const tab = document.createElement('div');
-        tab.className = selectedGenre === genre ? 'genre-tab active' : 'genre-tab';
-        tab.textContent = genre;
-        tab.onclick = () => selectGenre(genre);
-        tabsContainer.insertBefore(tab, tabsContainer.lastElementChild);
-    });
-}
-
-let saveTimeout;
-function autoSave() {
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-        saveAllData();
-    }, 500);
-}
-
-// バックアップ関数
-function downloadBackup() {
-    const data = {
-        tasks: tasks,
-        genres: genres,
-        dailyProgress: dailyProgress,
-        exportDate: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dream-novel-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    alert('バックアップファイルをダウンロードしました');
-}
-
-function uploadBackup() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const data = JSON.parse(event.target.result);
-                tasks = data.tasks || {};
-                genres = data.genres || ['TRICK', 'KILLERS'];
-                dailyProgress = data.dailyProgress || {};
-                saveAllData();
-                rebuildGenreTabs();
-                renderTasks();
-                updateStats();
-                updateProgressSection();
-                alert('復元完了！');
-            } catch (e) {
-                alert('ファイル読み込みエラー');
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-// ===== 初期化関数 =====
-function init() {
-    loadTheme(); // テーマ読み込み
+    loadTheme();
     const hasData = loadAllData();
     
     if (!hasData || Object.keys(tasks).length === 0) {
@@ -1135,12 +845,12 @@ function init() {
     updateMotivation();
     updateTodayProgress();
     
-    // 新機能の初期化
     showWeeklyView();
     checkAchievements();
     displayMemos();
     initAnalysisDashboard();
 }
+
 // 初期タスク生成
 function generateInitialTasks() {
     genres.forEach(genre => {
@@ -1233,7 +943,8 @@ function generateTasksForGenre(genre) {
         return task;
     });
 }
-    // タスク表示
+
+// タスク表示
 function renderTasks() {
     const taskList = document.getElementById('taskList');
     taskList.innerHTML = '';
@@ -1489,7 +1200,8 @@ function toggleTask(taskId) {
     updateProgressSection();
     autoSave();
 }
-    // ポモドーロタイマー
+
+// ポモドーロタイマー
 function togglePomodoro() {
     pomodoroActive = !pomodoroActive;
     if (pomodoroActive) {
@@ -1516,11 +1228,9 @@ function completePomodoro() {
     clearInterval(pomodoroInterval);
     pomodoroTime = 25 * 60;
     
-    // 今日の進捗更新
     const today = new Date().toISOString().split('T')[0];
     dailyProgress[today] = (dailyProgress[today] || 0) + 1;
     
-    // 現在のタスクの進捗更新
     if (currentTaskId) {
         Object.keys(tasks).forEach(genre => {
             tasks[genre] = tasks[genre].map(task => {
@@ -1553,7 +1263,6 @@ function startTaskPomodoro(taskId) {
 
 // 進捗状況更新
 function updateProgressSection() {
-    // 現在の注力タスク
     const activeTasks = [];
     Object.values(tasks).forEach(genreTasks => {
         genreTasks.forEach(task => {
@@ -1571,7 +1280,6 @@ function updateProgressSection() {
         focusElement.innerHTML = '📝 まだタスクを開始していません';
     }
     
-    // ジャンル別進捗
     const progressBars = document.getElementById('genreProgressBars');
     progressBars.innerHTML = '';
     
@@ -1623,18 +1331,15 @@ function showCalendarModal() {
     
     let html = '<div class="calendar">';
     
-    // 曜日ヘッダー
     const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
     weekDays.forEach(day => {
         html += `<div style="font-weight: bold; text-align: center; padding: 5px;">${day}</div>`;
     });
     
-    // 月初の空白
     for (let i = 0; i < firstDay.getDay(); i++) {
         html += '<div></div>';
     }
     
-    // 日付
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
         const dateStr = date.toISOString().split('T')[0];
@@ -1761,7 +1466,6 @@ function addGenre() {
         genres.push(genreName);
         tasks[genreName] = generateTasksForGenre(genreName);
         
-        // タブ追加
         const tabsContainer = document.querySelector('.genre-tabs');
         const newTab = document.createElement('div');
         newTab.className = 'genre-tab';
@@ -1780,6 +1484,7 @@ function addGenre() {
     hideModal('genreModal');
     autoSave();
 }
+
 // ===== テーマカスタマイズ =====
 const themes = {
     default: { primary: '#667eea', secondary: '#764ba2', name: 'デフォルト', emoji: '✨' },
@@ -1821,7 +1526,6 @@ function applyTheme(themeName) {
     const theme = themes[themeName];
     document.body.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
     
-    // プログレスセクションの色も変更
     const progressSection = document.querySelector('.progress-section');
     if (progressSection) {
         progressSection.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
@@ -1831,65 +1535,15 @@ function applyTheme(themeName) {
     hideModal('themeModal');
 }
 
-// ページ読み込み時にテーマを適用
 function loadTheme() {
     const savedTheme = localStorage.getItem('selectedTheme');
     if (savedTheme && themes[savedTheme]) {
         applyTheme(savedTheme);
     }
-}
-    
-    
-function applyTheme(themeName) {
-    const theme = themes[themeName];
-    document.body.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
-    
-    // プログレスセクションの色も変更
-    const progressSection = document.querySelector('.progress-section');
-    if (progressSection) {
-        progressSection.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`;
-    }
-    
-    localStorage.setItem('selectedTheme', themeName);
-    hideModal('themeModal');
 }
 
-// ページ読み込み時にテーマを適用
-function loadTheme() {
-    const savedTheme = localStorage.getItem('selectedTheme');
-    if (savedTheme && themes[savedTheme]) {
-        applyTheme(savedTheme);
-    }
-}
-    const input = document.getElementById('genreInput');
-    const genreName = input.value.trim();
-    
-    if (genreName && !genres.includes(genreName)) {
-        genres.push(genreName);
-        tasks[genreName] = generateTasksForGenre(genreName);
-        
-        // タブ追加
-        const tabsContainer = document.querySelector('.genre-tabs');
-        const newTab = document.createElement('div');
-        newTab.className = 'genre-tab';
-        newTab.textContent = genreName;
-        newTab.onclick = () => selectGenre(genreName);
-        tabsContainer.insertBefore(newTab, tabsContainer.lastElementChild);
-        
-        renderTasks();
-        updateStats();
-        updateProgressSection();
-        motivationLevel = Math.min(100, motivationLevel + 10);
-        updateMotivation();
-    }
-    
-    input.value = '';
-    hideModal('genreModal');
-    autoSave();
-}
-    // ===== 詳細分析ダッシュボード =====
+// ===== 詳細分析ダッシュボード =====
 function showAnalysisTab(tabName) {
-    // タブボタンのスタイル更新
     document.querySelectorAll('.analysis-tab').forEach(tab => {
         tab.style.background = '#e0e0e0';
         tab.style.color = '#333';
@@ -1914,12 +1568,10 @@ function showAnalysisTab(tabName) {
     }
 }
 
-// 作業パターン分析
 function showWorkPatterns(container) {
     const last30Days = {};
     const today = new Date();
     
-    // 過去30日のデータを集計
     for (let i = 0; i < 30; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - i);
@@ -1927,7 +1579,6 @@ function showWorkPatterns(container) {
         last30Days[dateStr] = dailyProgress[dateStr] || 0;
     }
     
-    // 曜日別集計
     const weekdayStats = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
     Object.entries(last30Days).forEach(([dateStr, count]) => {
         const day = new Date(dateStr).getDay();
@@ -1967,49 +1618,11 @@ function showWorkPatterns(container) {
                     </div>
                 `).join('')}
             </div>
-            
-            <h4 style="color: #667eea; margin: 20px 0 15px;">📈 過去7日間の推移</h4>
-            <div style="display: flex; gap: 5px; align-items: flex-end; height: 100px;">
-                ${Array.from({length: 7}, (_, i) => {
-                    const date = new Date();
-                    date.setDate(date.getDate() - (6 - i));
-                    const dateStr = date.toISOString().split('T')[0];
-                    const count = dailyProgress[dateStr] || 0;
-                    const maxCount = Math.max(...Object.values(dailyProgress).slice(-7));
-                    return `
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                            <div style="
-                                width: 100%;
-                                height: ${maxCount > 0 ? (count / maxCount * 100) : 0}px;
-                                background: linear-gradient(to top, #f093fb, #f5576c);
-                                border-radius: 5px 5px 0 0;
-                            "></div>
-                            <div style="font-size: 10px; margin-top: 5px; color: #666;">
-                                ${date.getMonth() + 1}/${date.getDate()}
-                            </div>
-                            <div style="font-size: 12px; color: #667eea;">
-                                ${count}🍅
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
         </div>
     `;
 }
 
-// 生産性分析
 function showProductivityAnalysis(container) {
-    // 時間帯別のポモドーロ記録（仮のデータ構造）
-    const timeSlots = {
-        '早朝(5-8時)': 0,
-        '午前(9-12時)': 0,
-        '午後(13-17時)': 0,
-        '夜(18-22時)': 0,
-        '深夜(23-4時)': 0
-    };
-    
-    // タスクタイプ別の完了率
     const typeStats = {};
     Object.values(tasks).forEach(genreTasks => {
         genreTasks.forEach(task => {
@@ -2053,30 +1666,10 @@ function showProductivityAnalysis(container) {
                     `;
                 }).join('')}
             </div>
-            
-            <h4 style="color: #667eea; margin: 20px 0 15px;">💪 最も生産的な条件</h4>
-            <div style="background: #f5f5f5; padding: 15px; border-radius: 10px;">
-                <div style="margin-bottom: 10px;">
-                    <span style="font-size: 20px;">📅</span>
-                    <strong>最も作業した曜日:</strong> 
-                    <span style="color: #667eea;">月曜日（平均 4.5 ポモドーロ）</span>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <span style="font-size: 20px;">⏰</span>
-                    <strong>最も集中できる時間帯:</strong> 
-                    <span style="color: #667eea;">午前中（9-12時）</span>
-                </div>
-                <div>
-                    <span style="font-size: 20px;">🎯</span>
-                    <strong>最も得意なタスク:</strong> 
-                    <span style="color: #667eea;">執筆（完了率 80%）</span>
-                </div>
-            </div>
         </div>
     `;
 }
 
-// ジャンル比較
 function showGenreComparison(container) {
     const genreStats = {};
     
@@ -2115,27 +1708,6 @@ function showGenreComparison(container) {
                                     ${stats.totalPomodoros}🍅
                                 </div>
                             </div>
-                            <div>
-                                <div style="font-size: 12px; color: #666;">タスク数</div>
-                                <div style="font-size: 18px; color: #333;">
-                                    ${stats.completed}/${stats.total}
-                                </div>
-                            </div>
-                            <div>
-                                <div style="font-size: 12px; color: #666;">平均進捗</div>
-                                <div style="font-size: 18px; color: #333;">
-                                    ${stats.avgProgress.toFixed(0)}%
-                                </div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 10px;">
-                            <div style="background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden;">
-                                <div style="
-                                    width: ${stats.avgProgress}%;
-                                    height: 100%;
-                                    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-                                "></div>
-                            </div>
                         </div>
                     </div>
                 `).join('')}
@@ -2144,14 +1716,14 @@ function showGenreComparison(container) {
     `;
 }
 
-// 初期表示
 function initAnalysisDashboard() {
     const content = document.getElementById('analysisContent');
     if (content) {
         showWorkPatterns(content);
     }
 }
-    // ===== 週間ビュー機能 =====
+
+// ===== 週間ビュー機能 =====
 function showWeeklyView() {
     const today = new Date();
     const weekStart = new Date(today);
@@ -2166,7 +1738,6 @@ function showWeeklyView() {
         const dateStr = date.toISOString().split('T')[0];
         const isToday = date.toDateString() === today.toDateString();
         
-        // その日のタスクを取得
         const dayTasks = [];
         Object.values(tasks).forEach(genreTasks => {
             genreTasks.forEach(task => {
@@ -2211,7 +1782,6 @@ function saveMemo() {
         genre: selectedGenre
     });
     
-    // 最新10件のみ保持
     if (memos.length > 10) memos.pop();
     
     localStorage.setItem('memos', JSON.stringify(memos));
@@ -2267,7 +1837,6 @@ function checkAchievements() {
         });
     });
     
-    // 実績チェック
     if (completedTasks >= 1 && !earned.includes('firstTask')) {
         earned.push('firstTask');
         showAchievementNotification(achievements.firstTask);
@@ -2334,7 +1903,7 @@ function showAchievementNotification(achievement) {
         setTimeout(() => notification.remove(), 500);
     }, 3000);
 }
-    
+
 // ===== 初期化実行 =====
 window.addEventListener('DOMContentLoaded', () => {
     init();
@@ -2349,7 +1918,6 @@ window.addEventListener('beforeunload', () => {
 setInterval(() => {
     saveAllData();
 }, 60000);
-
 </script>
 
 </body>
